@@ -1,6 +1,7 @@
 import { Camera, Link2, ScanSearch, Tags } from "lucide-react";
 
 import Hero from "@/components/Hero";
+import CountUp from "@/components/CountUp";
 import Footer from "@/components/Footer";
 import Nav from "@/components/Nav";
 import Reveal from "@/components/Reveal";
@@ -41,9 +42,9 @@ const STEPS: {
 ];
 
 const FIGURES = [
-  { value: "7", label: "webs de segunda mano en una sola búsqueda" },
-  { value: "0 €", label: "lo que cuesta usar Alter" },
-  { value: "1 clic", label: "del objeto nuevo a su alternativa" },
+  { eyebrow: "Plataformas", value: 7, unit: "webs", label: "de segunda mano en una sola búsqueda." },
+  { eyebrow: "Precio", value: 0, unit: "€", label: "Usar Alter es gratis." },
+  { eyebrow: "Lo que necesitas", value: 1, unit: "enlace", label: "o una foto del objeto. Nada más." },
 ];
 
 export default function Home() {
@@ -117,13 +118,24 @@ export default function Home() {
                 <img src={impactImage} alt="" className="h-auto w-full" />
               </Reveal>
             )}
-            <div className="mt-20 grid gap-10 border-t border-line pt-10 sm:grid-cols-3 sm:gap-6">
+            {/* Cifras destacadas: etiqueta arriba, número grande y frase corta abajo */}
+            <div className="mt-20 grid gap-5 md:grid-cols-3">
               {FIGURES.map((f, i) => (
-                <Reveal key={f.label} delay={i * 0.1}>
-                  <p className="headline text-[48px] sm:text-[56px]">
-                    <span className="text-alter-500">{f.value}</span>
-                  </p>
-                  <p className="mt-2 max-w-[240px] text-[17px] text-ink-2">{f.label}</p>
+                <Reveal
+                  key={f.eyebrow}
+                  delay={i * 0.12}
+                  className="flex flex-col rounded-[28px] bg-paper p-8 sm:p-10"
+                >
+                  <p className="text-[15px] font-semibold text-ink-3">{f.eyebrow}</p>
+                  <div className="mt-12 sm:mt-16">
+                    <p className="headline flex items-baseline gap-2 text-alter-500">
+                      <span className="text-[72px] leading-none sm:text-[88px]">
+                        <CountUp to={f.value} />
+                      </span>
+                      <span className="text-[28px] sm:text-[32px]">{f.unit}</span>
+                    </p>
+                    <p className="mt-3 text-[17px] text-ink-2">{f.label}</p>
+                  </div>
                 </Reveal>
               ))}
             </div>
