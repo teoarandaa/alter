@@ -216,6 +216,32 @@ def _slug_words(url: str) -> str:
     return " ".join(words[:8]) or url
 
 
+# Palabras que delatan el grupo del producto cuando no hay IA (se comparan sin acentos y en minúsculas).
+_GROUP_KEYWORDS = {
+    "electronica": {"iphone", "movil", "smartphone", "samsung", "xiaomi", "portatil", "ordenador", "macbook", "ipad",
+                    "tablet", "consola", "playstation", "ps5", "xbox", "nintendo", "auriculares", "airpods", "camara",
+                    "televisor", "tv", "monitor", "reloj", "smartwatch"},
+    "moda": {"camiseta", "camisa", "pantalon", "vaqueros", "abrigo", "chaqueta", "vestido", "falda", "zapatillas",
+             "zapatos", "botas", "bolso", "sudadera", "jersey", "chaleco", "gafas"},
+    "hogar": {"sofa", "mesa", "silla", "sillon", "lampara", "estanteria", "armario", "cama", "colchon", "alfombra",
+              "cafetera", "sarten", "mueble", "comoda", "espejo"},
+    "deporte": {"bicicleta", "bici", "patinete", "raqueta", "esquis", "tabla", "pesas", "cinta", "casco"},
+    "libros_ocio": {"libro", "novela", "comic", "manga", "videojuego", "juego", "pelicula", "dvd", "vinilo"},
+    "musica": {"guitarra", "piano", "teclado", "bateria", "violin", "amplificador", "ukelele", "bajo", "sintetizador"},
+    "infantil": {"bebe", "carrito", "cuna", "trona", "silla de coche", "juguete", "lego"},
+    "motor": {"coche", "moto", "furgoneta", "neumatico", "neumaticos", "llantas"},
+    "coleccionismo": {"antiguo", "antigua", "moneda", "monedas", "sello", "sellos", "cuadro", "figura", "coleccion"},
+}
+
+
+def guess_group(text: str) -> str:
+    tokens = set(re.findall(r"[a-z0-9]+", _normalize(text)))
+    for group, words in _GROUP_KEYWORDS.items():
+        if tokens & words:
+            return group
+    return "general"
+
+
 def heuristic_profile(title: str | None, notes: str | None, price: float | None) -> ProductProfile:
     base = (title or notes or "producto").strip()
     base = re.split(r"\s[|\-–]\s", base)[0]  # quita " | Tienda" del título
@@ -229,6 +255,7 @@ def heuristic_profile(title: str | None, notes: str | None, price: float | None)
     return ProductProfile(
         name=" ".join(tokens)[:120],
         category="general",
+        category_group=guess_group(f"{base} {notes or ''}"),
         key_features=[notes[:200]] if notes else [],
         new_price_eur=price,
         search_queries=queries or [base[:60]],

@@ -1,5 +1,5 @@
 {
-  "_comment": "Plataformas de segunda mano. 'priority' ordena los resultados (mayor = antes) y 'max_results' limita cuántos anuncios se muestran. Aquí se aplican los acuerdos de patrocinio: sube 'priority', 'max_results' y marca 'sponsored' para la plataforma que pague por destacar.",
+  "_comment": "Plataformas de segunda mano. 'priority' ordena los resultados (mayor = antes) y 'max_results' limita cuántos anuncios se muestran. Aquí se aplican los acuerdos de patrocinio: sube 'priority', 'max_results' y marca 'sponsored' para la plataforma que pague por destacar. Las de tipo 'link' se muestran como enlace a su búsqueda, solo si alguna de sus 'categories' coincide con la del producto ('general' = siempre). Categorías: general, electronica, moda, hogar, deporte, libros_ocio, musica, infantil, motor, coleccionismo.",
   "platforms": {
     "wallapop": {
       "name": "Wallapop",
@@ -41,6 +41,7 @@
       "name": "Cash Converters",
       "type": "link",
       "search_url": "https://www.cashconverters.es/es/es/search/?q={query}",
+      "categories": ["general"],
       "priority": 20,
       "sponsored": false,
       "color": "#0B3D91"
@@ -48,7 +49,8 @@
     "secondbest": {
       "name": "Secondbest",
       "type": "link",
-      "search_url": "https://secondbest.es/search?q={query}",
+      "search_url": "https://secondbest.es/?s={query}&post_type=product",
+      "categories": ["general"],
       "priority": 20,
       "sponsored": false,
       "color": "#222222"
@@ -57,9 +59,100 @@
       "name": "Todocolección",
       "type": "link",
       "search_url": "https://www.todocoleccion.net/buscador?bu={query}",
+      "categories": ["general"],
       "priority": 20,
       "sponsored": false,
       "color": "#C8102E"
+    },
+    "backmarket": {
+      "name": "Back Market",
+      "type": "link",
+      "search_url": "https://www.backmarket.es/es-es/search?q={query}",
+      "categories": ["electronica"],
+      "priority": 25,
+      "sponsored": false,
+      "color": "#000000"
+    },
+    "cex": {
+      "name": "CeX",
+      "type": "link",
+      "search_url": "https://es.webuy.com/search?stext={query}",
+      "categories": ["electronica", "libros_ocio"],
+      "priority": 25,
+      "sponsored": false,
+      "color": "#E3001B"
+    },
+    "refurbed": {
+      "name": "Refurbed",
+      "type": "link",
+      "search_url": "https://www.refurbed.es/search/?query={query}",
+      "categories": ["electronica"],
+      "priority": 25,
+      "sponsored": false,
+      "color": "#1A1A1A"
+    },
+    "rebuy": {
+      "name": "Rebuy",
+      "type": "link",
+      "search_url": "https://www.rebuy.es/comprar/search?q={query}",
+      "categories": ["electronica", "libros_ocio"],
+      "priority": 25,
+      "sponsored": false,
+      "color": "#00A0E2"
+    },
+    "amazonrenewed": {
+      "name": "Amazon Reacondicionados",
+      "type": "link",
+      "search_url": "https://www.amazon.es/s?k={query}&i=renewed",
+      "categories": ["electronica"],
+      "priority": 20,
+      "sponsored": false,
+      "color": "#FF9900"
+    },
+    "vestiaire": {
+      "name": "Vestiaire Collective",
+      "type": "link",
+      "search_url": "https://es.vestiairecollective.com/search/?q={query}",
+      "categories": ["moda"],
+      "priority": 25,
+      "sponsored": false,
+      "color": "#1A1A1A"
+    },
+    "percentil": {
+      "name": "Percentil",
+      "type": "link",
+      "search_url": "https://percentil.com/?km_q={query}",
+      "categories": ["moda", "infantil"],
+      "priority": 25,
+      "sponsored": false,
+      "color": "#F25C54"
+    },
+    "iberlibro": {
+      "name": "Iberlibro",
+      "type": "link",
+      "search_url": "https://www.iberlibro.com/servlet/SearchResults?kn={query}",
+      "categories": ["libros_ocio"],
+      "priority": 25,
+      "sponsored": false,
+      "color": "#C8102E"
+    },
+    "reverb": {
+      "name": "Reverb",
+      "type": "link",
+      "search_url": "https://reverb.com/es/marketplace?query={query}&condition=used",
+      "categories": ["musica"],
+      "priority": 25,
+      "sponsored": false,
+      "color": "#F25C1F"
+    },
+    "etsyvintage": {
+      "name": "Etsy (vintage)",
+      "type": "link",
+      "search_url": "https://www.etsy.com/es/search?q={query}+vintage",
+      "categories": ["hogar", "moda", "coleccionismo"],
+      "priority": 20,
+      "sponsored": false,
+      "color": "#F1641E"
     }
   }
 }

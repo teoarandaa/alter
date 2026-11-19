@@ -8,6 +8,7 @@ import Nav from "@/components/Nav";
 import Reveal from "@/components/Reveal";
 import ScrollText from "@/components/ScrollText";
 import { illustration, type IllustrationName } from "@/lib/illustrations";
+import { PLATFORMS } from "@/lib/platforms";
 
 const STEPS: {
   icon: typeof Link2;
@@ -40,7 +41,7 @@ const STEPS: {
 ];
 
 const FIGURES = [
-  { eyebrow: "Plataformas", value: 7, unit: "webs", label: "de segunda mano en una sola búsqueda." },
+  { eyebrow: "Plataformas", value: PLATFORMS.length, unit: "webs", label: "de segunda mano en una sola búsqueda." },
   { eyebrow: "Precio", value: 0, unit: "€", label: "Usar Alter es gratis." },
   { eyebrow: "Lo que necesitas", value: 1, unit: "enlace", label: "o una foto del objeto. Nada más." },
 ];

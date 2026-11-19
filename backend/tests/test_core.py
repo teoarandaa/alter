@@ -101,9 +101,30 @@ def test_savings_and_ranking():
 
 
 def test_links_for_platforms_without_api():
+    general = {"cashconverters", "secondbest", "todocoleccion"}
     links = build_links("silla nórdica")
-    assert {l.platform for l in links} == {"cashconverters", "secondbest", "todocoleccion"}
+    assert {l.platform for l in links} == general
     assert all("silla+n%C3%B3rdica" in l.url for l in links)
+    assert next(l for l in links if l.platform == "secondbest").url == (
+        "https://secondbest.es/?s=silla+n%C3%B3rdica&post_type=product"
+    )
+
+    electronics = [l.platform for l in build_links("iphone 13", "electronica")]
+    # Primero las especializadas en electrónica, después las generales; nada de moda o libros.
+    assert set(electronics[:5]) == {"backmarket", "cex", "refurbed", "rebuy", "amazonrenewed"}
+    assert set(electronics[5:]) == general
+    assert "percentil" not in electronics and "iberlibro" not in electronics
+
+    fashion = {l.platform for l in build_links("abrigo", "moda")}
+    assert {"vestiaire", "percentil", "etsyvintage"} <= fashion and "backmarket" not in fashion
+
+
+def test_guess_group_without_ai():
+    assert ai.guess_group("Compra un iPhone 16") == "electronica"
+    assert ai.guess_group("Abrigo de lana") == "moda"
+    assert ai.guess_group("Guitarra eléctrica Fender") == "musica"
+    assert ai.guess_group("Algo raro") == "general"
+    assert ai.heuristic_profile("Sofá de tres plazas", None, None).category_group == "hogar"
 
 
 def test_heuristics():
@@ -164,7 +185,8 @@ def test_image_search_endpoint_demo(monkeypatch):
     assert body["product"]["new_price_eur"] == 120
     assert body["listings"], "debería haber anuncios de ejemplo"
     assert all(0 <= l["savings_pct"] <= 100 for l in body["listings"])
-    assert len(body["links"]) == 3
+    assert body["product"]["category_group"] == "hogar"
+    assert {l["platform"] for l in body["links"]} == {"etsyvintage", "cashconverters", "secondbest", "todocoleccion"}
 
     bad = client.post("/api/search/image", files={"image": ("x.txt", b"hola", "text/plain")}, data={"description": "x"})
     assert bad.status_code == 415

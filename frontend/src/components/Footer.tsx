@@ -40,7 +40,7 @@ export default function Footer() {
 
           <div>
             <h2 className="font-semibold text-ink">Buscamos en</h2>
-            <ul className="mt-3 space-y-2.5">
+            <ul className="mt-3 columns-2 gap-6 [&>li]:mb-2.5 [&>li]:break-inside-avoid">
               {PLATFORMS.map((p) => (
                 <li key={p}>{p}</li>
               ))}

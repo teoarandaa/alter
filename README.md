@@ -21,7 +21,19 @@ frontend/   Web en Next.js 16 + TypeScript + Tailwind + Motion
 4. **Comparación**: Claude puntúa cada anuncio (mismo producto / similar / descartado) y se calcula el ahorro.
 5. **Orden** (`backend/app/search.py`): primero coincidencias exactas; dentro, las plataformas con más
    prioridad; después las más parecidas y las más baratas.
-6. Cash Converters, Secondbest y Todocolección no tienen API: se muestran enlaces directos a su búsqueda.
+6. Otras webs sin API se muestran como enlaces directos a su búsqueda, **solo las que encajan con el producto**:
+   Claude clasifica el producto en un grupo (electrónica, moda, hogar, libros y ocio, música…) y cada web de
+   `backend/platforms.json` indica sus grupos en `categories`. Las de grupo `general` salen siempre.
+
+   | Grupo | Webs enlazadas |
+   | --- | --- |
+   | Siempre | Cash Converters, Secondbest, Todocolección |
+   | Electrónica | Back Market, CeX, Refurbed, Rebuy, Amazon Reacondicionados |
+   | Moda | Vestiaire Collective, Percentil, Etsy (vintage) |
+   | Hogar y coleccionismo | Etsy (vintage) |
+   | Libros y ocio | Iberlibro, CeX, Rebuy |
+   | Música | Reverb |
+   | Infantil | Percentil |
 
 ### Patrocinios (estrategia de negocio)
 

@@ -31,6 +31,7 @@ class Platform:
     actor: str | None = None
     max_results: int = 10
     search_url: str | None = None
+    categories: tuple[str, ...] = ("general",)
 
 
 @lru_cache
@@ -48,6 +49,7 @@ def load_platforms() -> dict[str, Platform]:
             actor=cfg.get("actor"),
             max_results=int(cfg.get("max_results", settings.max_results_per_platform)),
             search_url=cfg.get("search_url"),
+            categories=tuple(cfg.get("categories", ["general"])),
         )
     return platforms
 
@@ -210,9 +212,14 @@ async def search_apify(platform: Platform, query: str, client: httpx.AsyncClient
     return normalize_items(platform.key, items if isinstance(items, list) else [], platform.max_results)
 
 
-def build_links(query: str) -> list[PlatformLink]:
-    links = []
-    for p in sorted(load_platforms().values(), key=lambda p: -p.priority):
-        if p.type == "link" and p.search_url:
-            links.append(PlatformLink(platform=p.key, name=p.name, url=p.search_url.format(query=quote_plus(query))))
-    return links
+def build_links(query: str, category_group: str = "general") -> list[PlatformLink]:
+    """Enlaces a webs sin API: primero las especializadas en el grupo del producto, después las generales."""
+    candidates = [
+        p
+        for p in load_platforms().values()
+        if p.type == "link" and p.search_url and ("general" in p.categories or category_group in p.categories)
+    ]
+    candidates.sort(key=lambda p: (0 if category_group in p.categories and category_group != "general" else 1, -p.priority))
+    return [
+        PlatformLink(platform=p.key, name=p.name, url=p.search_url.format(query=quote_plus(query))) for p in candidates
+    ]

@@ -6,6 +6,11 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, HttpUrl
 
+# Grupos de producto: deciden qué webs de segunda mano especializadas se enlazan (ver platforms.json).
+CategoryGroup = Literal[
+    "general", "electronica", "moda", "hogar", "deporte", "libros_ocio", "musica", "infantil", "motor", "coleccionismo"
+]
+
 
 class ProductProfile(BaseModel):
     """Lo que la IA entiende del objeto nuevo que el usuario quiere comprar."""
@@ -14,6 +19,14 @@ class ProductProfile(BaseModel):
     brand: str | None = Field(default=None, description="Marca, si se conoce")
     model: str | None = Field(default=None, description="Modelo o referencia, si se conoce")
     category: str = Field(description="Categoría general (p. ej. 'móviles', 'muebles', 'ropa')")
+    category_group: CategoryGroup = Field(
+        default="general",
+        description="Grupo del producto: electronica (móviles, ordenadores, consolas, electrodomésticos pequeños), "
+        "moda (ropa, calzado, bolsos, joyas), hogar (muebles, decoración, cocina), deporte (bicis, material "
+        "deportivo), libros_ocio (libros, videojuegos, películas, juegos de mesa), musica (instrumentos y equipo "
+        "de sonido), infantil (bebés y niños), motor (coches, motos y recambios), coleccionismo (antigüedades, "
+        "monedas, arte) o general si no encaja en ninguno",
+    )
     materials: list[str] = Field(default_factory=list, description="Materiales principales")
     key_features: list[str] = Field(default_factory=list, description="3-6 características clave")
     new_price_eur: float | None = Field(default=None, description="Precio nuevo en euros, si aparece")
