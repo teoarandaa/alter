@@ -113,6 +113,13 @@ def _norm_wallapop(item: dict) -> Listing | None:
     )
 
 
+def _milanuncios_image(url: str | None) -> str | None:
+    """El scraper da la URL sin tamaño y Milanuncios responde 404: hay que pedir un 'rule'."""
+    if url and "images.milanuncios.com" in url and "rule=" not in url:
+        return f"{url}{'&' if '?' in url else '?'}rule=detail_640x480"
+    return url
+
+
 def _norm_milanuncios(item: dict) -> Listing | None:
     return Listing(
         id=f"milanuncios-{item.get('id')}",
@@ -120,7 +127,7 @@ def _norm_milanuncios(item: dict) -> Listing | None:
         title=item.get("title") or "",
         price_eur=parse_price(item.get("price")),
         url=item.get("url") or "",
-        image=_image(item.get("images")),
+        image=_milanuncios_image(_image(item.get("images"))),
         location=", ".join(filter(None, [item.get("cityName"), item.get("provinceName")])) or None,
     )
 

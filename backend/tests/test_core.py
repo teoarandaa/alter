@@ -233,3 +233,13 @@ def test_heuristic_requires_model_numbers_and_skips_broken():
 def test_suspiciously_cheap_listings_dropped():
     items = [_listing("estafa", "milanuncios", 30), _listing("bueno", "wallapop", 370)]
     assert [i.id for i in apply_savings(items, 1009.0)] == ["bueno"]
+
+
+def test_milanuncios_image_gets_size_rule():
+    items = normalize_items(
+        "milanuncios",
+        [{"id": 1, "title": "Bici", "price": 100, "url": "https://www.milanuncios.com/a-1.htm",
+          "images": ["https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/abc"]}],
+        10,
+    )
+    assert items[0].image == "https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/abc?rule=detail_640x480"

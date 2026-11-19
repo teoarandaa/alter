@@ -217,6 +217,8 @@ export default function Results({ data, image }: { data: SearchResponse; image: 
 
 function ListingCard({ listing: l, index }: { listing: Listing; index: number }) {
   const color = PLATFORM_COLORS[l.platform] ?? "#6C3CE1";
+  // Si la foto no carga (enlace caducado, bloqueo de la web…), se muestra el icono en lugar de una imagen rota.
+  const [imageFailed, setImageFailed] = useState(false);
   return (
     <motion.li
       initial={{ opacity: 0, y: 16 }}
@@ -230,9 +232,16 @@ function ListingCard({ listing: l, index }: { listing: Listing; index: number })
         className="group flex h-full flex-col overflow-hidden rounded-3xl border border-alter-100 bg-white transition hover:-translate-y-1 hover:border-alter-300 hover:shadow-xl hover:shadow-alter-500/10"
       >
         <div className="relative aspect-[4/3] bg-alter-50">
-          {l.image ? (
+          {l.image && !imageFailed ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={l.image} alt={l.title} loading="lazy" className="size-full object-cover" />
+            <img
+              src={l.image}
+              alt={l.title}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              onError={() => setImageFailed(true)}
+              className="size-full object-cover"
+            />
           ) : (
             <div className="grid size-full place-items-center">
               <PackageSearch className="size-10 text-alter-300" />
