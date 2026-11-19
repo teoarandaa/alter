@@ -133,10 +133,6 @@ export default function Home() {
         {/* Llamada final */}
         <section className="bg-paper px-4 py-24 text-center sm:px-6 sm:py-32">
           <Reveal className="mx-auto max-w-[680px]">
-            {finalImage && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={finalImage} alt="" className="mx-auto mb-12 h-44 w-auto sm:h-56" />
-            )}
             <h2 className="headline text-[40px] sm:text-[64px]">Tu próxima compra ya existe.</h2>
             <p className="mt-4 text-[19px] text-ink-2 sm:text-[21px]">Solo hay que encontrarla.</p>
             <a
@@ -145,6 +141,10 @@ export default function Home() {
             >
               Empezar a buscar
             </a>
+            {finalImage && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={finalImage} alt="" className="mx-auto mt-16 h-44 w-auto sm:h-56" />
+            )}
           </Reveal>
         </section>
       </main>
