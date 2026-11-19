@@ -65,7 +65,9 @@ def _input_milanuncios(query: str, limit: int) -> dict:
 
 
 def _input_vinted(query: str, limit: int) -> dict:
-    return {"keywords": [query], "country": "es", "maxProducts": limit}
+    # Con la URL de vinted.es los resultados son de España; con "keywords" a veces llegaban de otros países.
+    url = f"https://www.vinted.es/catalog?search_text={quote_plus(query)}"
+    return {"startUrls": [{"url": url}], "maxProducts": limit}
 
 
 def _input_ebay(query: str, limit: int) -> dict:
@@ -178,6 +180,8 @@ def normalize_items(platform_key: str, items: list[dict], limit: int) -> list[Li
             continue
         if not listing or not listing.title or not listing.url.startswith("http") or listing.id in seen:
             continue
+        if listing.price_eur is not None and listing.price_eur <= 1:
+            listing.price_eur = None  # 0 € o 1 € suele ser «a convenir», no un precio real
         seen.add(listing.id)
         listings.append(listing)
         if len(listings) >= limit:

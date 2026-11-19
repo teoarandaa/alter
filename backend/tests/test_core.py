@@ -168,3 +168,68 @@ def test_image_search_endpoint_demo(monkeypatch):
 
     bad = client.post("/api/search/image", files={"image": ("x.txt", b"hola", "text/plain")}, data={"description": "x"})
     assert bad.status_code == 415
+
+
+def test_search_survives_claude_failure(monkeypatch):
+    """Si Claude falla (sin crédito, caída…), la búsqueda sigue con el análisis sin IA."""
+    from fastapi.testclient import TestClient
+
+    from app import config, main, search
+
+    keys = config.Settings(anthropic_api_key="sk-ant-test", apify_token=None)
+    for module in (config, ai, search, main):
+        monkeypatch.setattr(module, "settings", keys, raising=False)
+
+    async def boom(*args, **kwargs):
+        raise RuntimeError("sin crédito")
+
+    async def no_page(url):
+        raise main.httpx.ConnectError("bloqueado")
+
+    monkeypatch.setattr(ai, "analyze_page", boom)
+    monkeypatch.setattr(ai, "analyze_image", boom)
+    monkeypatch.setattr(ai, "_score_with_claude", boom)
+    monkeypatch.setattr(main, "fetch_product_page", no_page)
+    monkeypatch.setattr(main, "assert_safe_url", lambda url: __import__("asyncio").sleep(0))
+
+    client = TestClient(main.app)
+    res = client.post("/api/search/url", json={"url": "https://www.tienda.es/p/silla-nordica-madera-123"})
+    assert res.status_code == 200, res.text
+    assert res.json()["ai_enabled"] is False
+    assert res.json()["product"]["search_queries"][0] == "silla nordica madera"
+
+    photo = client.post("/api/search/image", files={"image": ("a.png", b"x", "image/png")}, data={"description": ""})
+    assert photo.status_code == 503
+
+
+def test_heuristic_cleans_shop_words_and_free_prices():
+    profile = ai.heuristic_profile("Compra un iPhone\xa016", None, 1009.0)
+    assert profile.name == "iPhone 16"
+    assert profile.search_queries == ["iPhone 16"]
+
+    items = normalize_items(
+        "milanuncios",
+        [{"id": 1, "title": "iPhone 16", "price": 0, "url": "https://www.milanuncios.com/a-1.htm"}],
+        10,
+    )
+    assert items[0].price_eur is None
+    assert apply_savings(items, 1009.0)[0].savings_pct is None
+
+
+def test_heuristic_requires_model_numbers_and_skips_broken():
+    profile = ai.heuristic_profile("iPhone 16", None, 1009.0)
+    titles = {
+        "a": "iPhone 16 128GB Azul",
+        "b": "iPhone 16e 256GB",
+        "c": "Apple iPhone SE de 2016",
+        "d": "Iphone 8 plus 64gb",
+        "e": "iPhone 16 (No enciende)",
+        "f": "iPhone 16 DIY=XR modificación",
+    }
+    listings = [Listing(id=k, platform="wallapop", title=v, url="https://x") for k, v in titles.items()]
+    assert [l.id for l in ai.heuristic_scores(profile, listings)] == ["a", "b"]
+
+
+def test_suspiciously_cheap_listings_dropped():
+    items = [_listing("estafa", "milanuncios", 30), _listing("bueno", "wallapop", 370)]
+    assert [i.id for i in apply_savings(items, 1009.0)] == ["bueno"]

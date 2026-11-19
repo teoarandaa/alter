@@ -12,16 +12,32 @@ type Sort = "recommended" | "cheapest" | "savings";
 export default function Results({ data, image }: { data: SearchResponse; image: string | null }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<Sort>("recommended");
+  const [manualPrice, setManualPrice] = useState("");
   const { product } = data;
 
+  // Si la tienda no dejó leer el precio, el usuario puede escribirlo y el ahorro se calcula aquí.
+  const typedPrice = Number(manualPrice.replace(",", "."));
+  const newPrice = product.new_price_eur ?? (typedPrice > 0 ? typedPrice : null);
+  const allListings = useMemo(() => {
+    if (product.new_price_eur != null || newPrice == null) return data.listings;
+    return data.listings.map((l) => {
+      if (l.price_eur == null || l.price_eur > newPrice) return { ...l, savings_eur: null, savings_pct: null };
+      const savings = newPrice - l.price_eur;
+      return { ...l, savings_eur: Math.round(savings * 100) / 100, savings_pct: Math.round((savings / newPrice) * 1000) / 10 };
+    });
+  }, [data.listings, product.new_price_eur, newPrice]);
+  const bestSavings =
+    data.best_savings_pct ??
+    allListings.reduce<number | null>((best, l) => (l.savings_pct != null && l.savings_pct > (best ?? -1) ? l.savings_pct : best), null);
+
   const listings = useMemo(() => {
-    const filtered = data.listings.filter((l) => filter === "all" || l.match_type === filter);
+    const filtered = allListings.filter((l) => filter === "all" || l.match_type === filter);
     if (sort === "recommended") return filtered;
     const price = (l: Listing) => l.price_eur ?? Number.POSITIVE_INFINITY;
     return [...filtered].sort((a, b) =>
       sort === "cheapest" ? price(a) - price(b) : (b.savings_pct ?? -1) - (a.savings_pct ?? -1),
     );
-  }, [data.listings, filter, sort]);
+  }, [allListings, filter, sort]);
 
   const cheapest = data.listings.reduce<Listing | null>(
     (best, l) => (l.price_eur != null && (!best || l.price_eur < (best.price_eur ?? Infinity)) ? l : best),
@@ -42,7 +58,7 @@ export default function Results({ data, image }: { data: SearchResponse; image: 
           <Info className="mt-0.5 size-4 shrink-0" />
           <p>
             {data.demo_mode && "Modo demo: los anuncios son de ejemplo y los enlaces llevan a la búsqueda real de cada web. "}
-            {!data.ai_enabled && "Sin clave de Claude: el análisis del producto es aproximado. "}
+            {!data.ai_enabled && "Esta búsqueda se ha hecho sin IA: el análisis del producto es aproximado. "}
             Configura las claves en <code className="rounded bg-amber-100 px-1">backend/.env</code>.
           </p>
         </div>
@@ -83,18 +99,33 @@ export default function Results({ data, image }: { data: SearchResponse; image: 
         </div>
 
         <div className="flex flex-col justify-center rounded-3xl bg-alter-500 p-6 text-white md:min-w-64">
-          {data.best_savings_pct != null ? (
+          {bestSavings != null ? (
             <>
               <p className="text-sm text-alter-100">Ahorro de hasta</p>
-              <p className="font-display text-5xl font-bold tracking-tight">{Math.round(data.best_savings_pct)}%</p>
+              <p className="font-display text-5xl font-bold tracking-tight">{Math.round(bestSavings)}%</p>
               {cheapest && <p className="mt-1 text-sm text-alter-100">Desde {formatEur(cheapest.price_eur)} de segunda mano</p>}
             </>
           ) : (
             <>
               <p className="text-sm text-alter-100">Alternativas encontradas</p>
               <p className="font-display text-5xl font-bold tracking-tight">{data.listings.length}</p>
-              <p className="mt-1 text-sm text-alter-100">Añade el precio nuevo para ver el ahorro</p>
             </>
+          )}
+          {product.new_price_eur == null && (
+            <label className="mt-3 block text-sm text-alter-100">
+              ¿Cuánto cuesta nuevo?
+              <span className="mt-1 flex items-center rounded-xl bg-white/15 px-3 ring-1 ring-white/25 focus-within:ring-white/60">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="Precio en tienda"
+                  value={manualPrice}
+                  onChange={(e) => setManualPrice(e.target.value.replace(/[^\d.,]/g, ""))}
+                  className="w-full bg-transparent py-2 text-base text-white outline-none placeholder:text-alter-100/60"
+                />
+                <span className="text-alter-100">€</span>
+              </span>
+            </label>
           )}
           <p className="mt-4 flex items-center gap-1.5 text-xs text-alter-100">
             <Leaf className="size-3.5" /> Cada compra de segunda mano evita fabricar un objeto nuevo

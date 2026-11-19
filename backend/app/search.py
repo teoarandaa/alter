@@ -51,11 +51,17 @@ async def _search_platform(
     return listings, status
 
 
+# Un anuncio por menos del 10 % del precio nuevo casi nunca es el producto: estafa, accesorio o precio de relleno.
+MIN_PRICE_RATIO = 0.10
+
+
 def apply_savings(listings: list[Listing], new_price: float | None) -> list[Listing]:
-    """Calcula el ahorro frente al precio nuevo y descarta lo que sale más caro."""
+    """Calcula el ahorro frente al precio nuevo y descarta lo que sale más caro o sospechosamente barato."""
     kept = []
     for item in listings:
         if new_price and item.price_eur is not None:
+            if item.price_eur < new_price * MIN_PRICE_RATIO:
+                continue
             item.savings_eur = round(new_price - item.price_eur, 2)
             item.savings_pct = round((new_price - item.price_eur) / new_price * 100, 1)
             if item.savings_eur < 0:
@@ -80,7 +86,9 @@ def rank(listings: list[Listing], platforms: dict[str, Platform]) -> list[Listin
     return sorted(listings, key=key)
 
 
-async def run_search(profile: ProductProfile, source_image: str | None = None) -> SearchResponse:
+async def run_search(profile: ProductProfile, source_image: str | None = None, ai_used: bool = True) -> SearchResponse:
+    """ai_used=False si el análisis tuvo que hacerse sin Claude: tampoco se usa para puntuar."""
+    ai_used = ai_used and settings.ai_enabled
     platforms = load_platforms()
     apify_platforms = [p for p in platforms.values() if p.type == "apify"]
 
@@ -90,7 +98,7 @@ async def run_search(profile: ProductProfile, source_image: str | None = None) -
     listings = [item for found, _ in results for item in found]
     statuses = [status for _, status in results]
 
-    listings = await ai.score_listings(profile, listings)
+    listings = await ai.score_listings(profile, listings, use_ai=ai_used)
     listings = apply_savings(listings, profile.new_price_eur)
     listings = rank(listings, platforms)
 
@@ -103,5 +111,5 @@ async def run_search(profile: ProductProfile, source_image: str | None = None) -
         platforms=statuses,
         best_savings_pct=max(savings) if savings else None,
         demo_mode=settings.demo_mode,
-        ai_enabled=settings.ai_enabled,
+        ai_enabled=ai_used,
     )

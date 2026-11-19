@@ -22,6 +22,8 @@ from .schemas import Listing, ProductProfile
 log = logging.getLogger("alter.ai")
 
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
+# Modelos que aceptan el respaldo en el servidor si rechazan una petición (Haiku no lo admite).
+FALLBACK_MODELS = {"claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5", "claude-fable-5-2", "claude-fable-5-1"}
 
 ANALYZE_SYSTEM = """Eres el analista de producto de Alter, una web que ayuda a la gente a comprar \
 de segunda mano en lugar de nuevo. Recibes la información de un producto nuevo (página de venta, \
@@ -41,9 +43,14 @@ razonable que podría sustituirlo.
 - match_type "exact": mismo producto (misma marca y modelo, o idéntico en lo esencial).
 - match_type "similar": producto distinto pero que cumple la misma función con características parecidas.
 - match_type "unrelated": accesorios, piezas, fundas, cajas vacías, anuncios de compra ("compro..."), \
-productos de otra categoría o claramente distintos.
+productos averiados o imitaciones, productos de otra categoría o claramente distintos, y anuncios con un \
+precio imposible para ese producto (posible estafa o precio de relleno).
 - similarity: 0-100, lo bien que el anuncio sustituye al producto nuevo.
 Devuelve una puntuación por cada id recibido."""
+
+
+# Por debajo de esta similitud, el anuncio no se muestra aunque la IA no lo haya descartado.
+MIN_SIMILARITY = 40
 
 
 class ListingScore(BaseModel):
@@ -67,7 +74,10 @@ def _get_client() -> anthropic.AsyncAnthropic:
 
 
 async def _parse(system: str, content: list[dict], output_format: type[BaseModel], max_tokens: int = 8000):
-    """Llamada a Claude con salida estructurada y modelo de respaldo si hay un rechazo."""
+    """Llamada a Claude con salida estructurada (y modelo de respaldo si hay un rechazo, cuando el modelo lo admite)."""
+    extra: dict = {}
+    if settings.claude_model in FALLBACK_MODELS:
+        extra = {"betas": [FALLBACK_BETA], "fallbacks": "default"}
     response = await _get_client().beta.messages.parse(
         model=settings.claude_model,
         max_tokens=max_tokens,
@@ -75,8 +85,7 @@ async def _parse(system: str, content: list[dict], output_format: type[BaseModel
         messages=[{"role": "user", "content": content}],
         output_format=output_format,
         output_config={"effort": "medium"},
-        betas=[FALLBACK_BETA],
-        fallbacks="default",
+        **extra,
     )
     if response.stop_reason == "refusal" or response.parsed_output is None:
         raise RuntimeError(f"Claude no devolvió una respuesta válida (stop_reason={response.stop_reason})")
@@ -90,9 +99,7 @@ async def _parse(system: str, content: list[dict], output_format: type[BaseModel
 async def analyze_page(page: PageInfo | None, url: str, notes: str | None) -> ProductProfile:
     usable = page is not None and not page.redirected_away
     if not settings.ai_enabled:
-        if usable:
-            return heuristic_profile(page.title, notes, page.price_eur)
-        return heuristic_profile(_slug_words(url), notes, None)
+        return heuristic_page_profile(page, url, notes)
 
     text = page.as_prompt() if page else f"URL: {url}\n(No se ha podido descargar la página; deduce lo que puedas del enlace.)"
     if notes:
@@ -136,11 +143,11 @@ async def analyze_image(image: bytes, media_type: str, description: str, new_pri
 # Puntuación de anuncios
 # ---------------------------------------------------------------------------
 
-async def score_listings(profile: ProductProfile, listings: list[Listing]) -> list[Listing]:
+async def score_listings(profile: ProductProfile, listings: list[Listing], use_ai: bool = True) -> list[Listing]:
     """Rellena similarity/match_type y descarta lo que no tiene relación."""
     if not listings:
         return []
-    if settings.ai_enabled:
+    if settings.ai_enabled and use_ai:
         try:
             return await _score_with_claude(profile, listings)
         except Exception:  # noqa: BLE001 - si falla la IA, mejor resultados heurísticos que ninguno
@@ -163,7 +170,7 @@ async def _score_with_claude(profile: ProductProfile, listings: list[Listing]) -
     scored: list[Listing] = []
     for item in listings:
         score = by_id.get(item.id)
-        if score is None or score.match_type == "unrelated":
+        if score is None or score.match_type == "unrelated" or score.similarity < MIN_SIMILARITY:
             continue
         item.similarity = max(0, min(100, score.similarity))
         item.match_type = score.match_type
@@ -178,8 +185,15 @@ async def _score_with_claude(profile: ProductProfile, listings: list[Listing]) -
 _STOPWORDS = {
     "de", "la", "el", "los", "las", "y", "con", "para", "en", "un", "una", "del", "al", "por", "sin",
     "the", "and", "with", "for", "new", "nuevo", "nueva", "oferta", "envio", "gratis", "comprar",
+    # Palabras de tienda que aparecen en los títulos de las páginas de producto
+    "compra", "compralo", "compre", "buy", "shop", "tienda", "online", "precio", "mejor", "ahora", "hoy",
+    "descuento", "rebajas", "official", "oficial", "store", "unidad", "unidades",
 }
-_EXCLUDE = {"funda", "carcasa", "protector", "caja", "cargador", "compro", "busco", "repuesto", "piezas"}
+_EXCLUDE = {
+    "funda", "fundas", "carcasa", "protector", "caja", "cargador", "compro", "busco", "repuesto", "piezas",
+    # Averiados, bloqueados o imitaciones
+    "averiado", "averiada", "roto", "rota", "enciende", "bloqueado", "bloqueada", "icloud", "replica", "diy",
+}
 
 
 def _normalize(text: str) -> str:
@@ -207,8 +221,12 @@ def heuristic_profile(title: str | None, notes: str | None, price: float | None)
     words = [w for w in re.findall(r"\w+", base) if _normalize(w) not in _STOPWORDS]
     queries = [" ".join(words[:5]), " ".join(words[:3])]
     queries = [q for i, q in enumerate(queries) if q and q not in queries[:i]]
+    # Nombre legible: el título sin las palabras de tienda del principio ("Compra un iPhone 16" -> "iPhone 16").
+    tokens = base.split()
+    while len(tokens) > 1 and _normalize(tokens[0]) in _STOPWORDS:
+        tokens.pop(0)
     return ProductProfile(
-        name=base[:120],
+        name=" ".join(tokens)[:120],
         category="general",
         key_features=[notes[:200]] if notes else [],
         new_price_eur=price,
@@ -216,12 +234,24 @@ def heuristic_profile(title: str | None, notes: str | None, price: float | None)
     )
 
 
+def heuristic_page_profile(page: PageInfo | None, url: str, notes: str | None) -> ProductProfile:
+    if page is not None and not page.redirected_away:
+        title = " ".join(filter(None, [page.brand if page.brand and page.brand not in (page.title or "") else None, page.title]))
+        return heuristic_profile(title, notes, page.price_eur)
+    return heuristic_profile(_slug_words(url), notes, None)
+
+
 def heuristic_scores(profile: ProductProfile, listings: list[Listing]) -> list[Listing]:
     reference = _tokens(" ".join(filter(None, [profile.name, profile.brand, profile.model, *profile.search_queries])))
+    # Los números suelen ser el modelo ("iPhone 16"): el anuncio debe tener uno que empiece igual ("16", "16e"),
+    # para no mezclar con un "iPhone 8" o un "iPhone SE 2016".
+    numbers = {t for t in reference if t.isdigit()}
     scored: list[Listing] = []
     for item in listings:
         title_tokens = _tokens(item.title)
         if title_tokens & _EXCLUDE and not reference & _EXCLUDE:
+            continue
+        if any(not any(t.startswith(n) for t in title_tokens) for n in numbers):
             continue
         overlap = len(reference & title_tokens) / max(1, len(reference))
         similarity = round(overlap * 100)

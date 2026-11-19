@@ -38,14 +38,12 @@ async def health() -> dict:
     return {"status": "ok", "ai_enabled": settings.ai_enabled, "demo_mode": settings.demo_mode}
 
 
-def _ai_error(exc: Exception) -> HTTPException:
-    if isinstance(exc, anthropic.AuthenticationError):
-        return HTTPException(503, "La clave de la API de Claude no es válida. Revisa ANTHROPIC_API_KEY.")
-    if isinstance(exc, anthropic.RateLimitError):
-        return HTTPException(429, "Hay mucha demanda ahora mismo. Inténtalo de nuevo en un minuto.")
-    if isinstance(exc, (anthropic.APIConnectionError, anthropic.APIStatusError)):
-        return HTTPException(502, "No hemos podido analizar el producto. Inténtalo de nuevo.")
-    return HTTPException(500, "No hemos podido analizar el producto.")
+def _log_ai_failure(exc: Exception, what: str) -> None:
+    """Claude ha fallado: se registra el motivo y la búsqueda sigue sin IA."""
+    if isinstance(exc, anthropic.APIStatusError):
+        log.error("Claude falló analizando %s (HTTP %s): %s", what, exc.status_code, exc.message)
+    else:
+        log.exception("Claude falló analizando %s", what)
 
 
 @app.post("/api/search/url", response_model=SearchResponse)
@@ -65,12 +63,13 @@ async def search_by_url(body: SearchByUrlRequest) -> SearchResponse:
         # Muchas tiendas bloquean descargas automáticas: seguimos solo con el enlace.
         log.info("No se pudo descargar %s: %s", url, exc)
 
+    ai_used = True
     try:
         profile = await ai.analyze_page(page, url, body.notes)
-    except Exception as exc:  # noqa: BLE001
-        log.exception("Error analizando %s", url)
-        raise _ai_error(exc) from exc
-    return await run_search(profile, source_image=page.image if page else None)
+    except Exception as exc:  # noqa: BLE001 - sin IA la búsqueda sigue funcionando
+        _log_ai_failure(exc, url)
+        profile, ai_used = ai.heuristic_page_profile(page, url, body.notes), False
+    return await run_search(profile, source_image=page.image if page else None, ai_used=ai_used)
 
 
 @app.post("/api/search/image", response_model=SearchResponse)
@@ -89,9 +88,12 @@ async def search_by_image(
     if not settings.ai_enabled and not description.strip():
         raise HTTPException(400, "Describe el objeto para poder buscarlo.")
 
+    ai_used = True
     try:
         profile = await ai.analyze_image(data, image.content_type, description.strip(), new_price_eur)
-    except Exception as exc:  # noqa: BLE001
-        log.exception("Error analizando imagen")
-        raise _ai_error(exc) from exc
-    return await run_search(profile)
+    except Exception as exc:  # noqa: BLE001 - sin IA solo podemos usar la descripción
+        _log_ai_failure(exc, "una imagen")
+        if not description.strip():
+            raise HTTPException(503, "Ahora mismo no podemos analizar fotos. Describe el objeto y vuelve a buscar.") from exc
+        profile, ai_used = ai.heuristic_profile(description.strip(), None, new_price_eur), False
+    return await run_search(profile, ai_used=ai_used)

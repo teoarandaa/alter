@@ -28,6 +28,7 @@ export default function SearchPanel() {
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SearchResponse | null>(null);
+  const [searchCount, setSearchCount] = useState(0);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -72,6 +73,7 @@ export default function SearchPanel() {
           ? await searchByUrl(url.trim(), notes.trim(), controller.signal)
           : await searchByImage(file!, description.trim(), Number(newPrice.replace(",", ".")) || undefined, controller.signal);
       setResult(data);
+      setSearchCount((n) => n + 1);
       setResultImage(mode === "image" ? preview : data.source_image);
     } catch (err) {
       if ((err as Error).name !== "AbortError") setError((err as Error).message);
@@ -247,7 +249,7 @@ export default function SearchPanel() {
       </form>
 
       <div ref={resultsRef} className="scroll-mt-6">
-        {result && <Results data={result} image={resultImage} />}
+        {result && <Results key={searchCount} data={result} image={resultImage} />}
       </div>
     </div>
   );
