@@ -3,16 +3,25 @@
 :root {
   color-scheme: light;
   --background: #ffffff;
-  --foreground: #1c1530;
+  --foreground: #1d1d1f;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
 
-  /* Violeta de marca (#6C3CE1) y sus tonalidades */
+  /* Fuente del sistema: en Mac/iPhone es SF Pro; en el resto, Inter. */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* Neutros sobrios */
+  --color-ink: #1d1d1f;
+  --color-ink-2: #6e6e73;
+  --color-ink-3: #86868b;
+  --color-line: #d2d2d7;
+  --color-paper: #f5f5f7;
+
+  /* Violeta de marca (#6C3CE1), solo como acento */
   --color-alter-50: #f5f1fe;
   --color-alter-100: #ebe3fc;
   --color-alter-200: #d5c6f8;
@@ -21,23 +30,55 @@
   --color-alter-500: #6c3ce1;
   --color-alter-600: #5a2bcb;
   --color-alter-700: #4a23a8;
-  --color-alter-800: #3b1d85;
-  --color-alter-900: #2a1560;
-  --color-alter-950: #1a0c3d;
+
+  --ease-apple: cubic-bezier(0.28, 0.11, 0.32, 1);
+}
+
+html {
+  scroll-padding-top: 48px; /* altura del menú fijo */
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: var(--color-alter-200);
-  color: var(--color-alter-900);
+  background: var(--color-alter-100);
 }
 
-.bg-grain {
-  background-image:
-    radial-gradient(ellipse 80% 60% at 50% -10%, color-mix(in oklab, var(--color-alter-500) 22%, transparent), transparent 70%),
-    radial-gradient(ellipse 50% 40% at 100% 20%, color-mix(in oklab, var(--color-alter-300) 25%, transparent), transparent 70%);
+/* Titulares: interletrado apretado como en los titulares de producto */
+.headline {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.028em;
+  line-height: 1.05;
+}
+
+/* Texto en degradado para la palabra destacada */
+.text-gradient {
+  background: linear-gradient(90deg, #6c3ce1 0%, #9372ea 55%, #b79ff2 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Barra de progreso indeterminada */
+@keyframes progress {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+.animate-progress {
+  animation: progress 1.6s var(--ease-apple) infinite;
 }

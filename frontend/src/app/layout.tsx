@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
+
+import MotionProvider from "@/components/MotionProvider";
 import "./globals.css";
 
-const display = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"] });
-const body = Inter({ variable: "--font-inter", subsets: ["latin"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -30,19 +31,21 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_ES",
     siteName: "Alter",
-    title: "Alter · Alternativas sostenibles",
+    title: "Alter · Segunda mano. Primera opción.",
     description: "Encuentra de segunda mano lo que ibas a comprar nuevo y descubre cuánto ahorras.",
   },
-  twitter: { card: "summary_large_image", title: "Alter · Alternativas sostenibles" },
+  twitter: { card: "summary_large_image", title: "Alter · Segunda mano. Primera opción." },
   alternates: { canonical: "/" },
 };
 
-export const viewport: Viewport = { themeColor: "#6C3CE1" };
+export const viewport: Viewport = { themeColor: "#ffffff" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${display.variable} ${body.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col font-sans">{children}</body>
+    <html lang="es" className={`${inter.variable} h-full`}>
+      <body className="flex min-h-full flex-col font-sans">
+        <MotionProvider>{children}</MotionProvider>
+      </body>
     </html>
   );
 }

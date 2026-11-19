@@ -1,20 +1,25 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { Camera, Link2, Loader2, Search, Upload, X } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { searchByImage, searchByUrl, type SearchResponse } from "@/lib/api";
+import { APPLE_EASE } from "./Reveal";
 import Results from "./Results";
+import Segmented from "./Segmented";
 
 type Mode = "url" | "image";
 
 const STEPS = [
-  "Analizando el producto con IA…",
+  "Analizando el producto…",
   "Buscando en Wallapop, Milanuncios, Vinted y eBay…",
-  "Comparando anuncios con el original…",
-  "Calculando cuánto te ahorras…",
+  "Comparando cada anuncio con el original…",
+  "Calculando cuánto ahorras…",
 ];
+
+const field =
+  "w-full rounded-xl border border-transparent bg-paper px-4 text-[17px] text-ink outline-none transition duration-300 placeholder:text-ink-3 focus:border-alter-500 focus:bg-white focus:ring-4 focus:ring-alter-500/15";
 
 export default function SearchPanel() {
   const [mode, setMode] = useState<Mode>("url");
@@ -86,42 +91,43 @@ export default function SearchPanel() {
     <div className="w-full">
       <form
         onSubmit={onSubmit}
-        className="mx-auto w-full max-w-2xl rounded-3xl border border-alter-100 bg-white/90 p-3 shadow-[0_20px_60px_-20px_rgba(108,60,225,0.35)] backdrop-blur"
+        className="relative mx-auto w-full max-w-[680px] overflow-hidden rounded-[28px] bg-white p-5 shadow-[0_2px_40px_rgba(0,0,0,0.06)] sm:p-8"
       >
-        <div role="tablist" aria-label="Cómo quieres buscar" className="relative mb-3 grid grid-cols-2 rounded-2xl bg-alter-50 p-1">
-          {(["url", "image"] as Mode[]).map((m) => (
-            <button
-              key={m}
-              type="button"
-              role="tab"
-              aria-selected={mode === m}
-              onClick={() => setMode(m)}
-              className={`relative z-10 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-colors ${
-                mode === m ? "text-alter-700" : "text-alter-900/60 hover:text-alter-700"
-              }`}
+        {/* Barra de progreso fina mientras busca */}
+        <AnimatePresence>
+          {loading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-x-0 top-0 h-[3px] overflow-hidden bg-alter-100"
             >
-              {mode === m && (
-                <motion.span
-                  layoutId="tab-pill"
-                  className="absolute inset-0 -z-10 rounded-xl bg-white shadow-sm"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-                />
-              )}
-              {m === "url" ? <Link2 className="size-4" /> : <Camera className="size-4" />}
-              {m === "url" ? "Pegar enlace" : "Subir foto"}
-            </button>
-          ))}
+              <div className="animate-progress h-full w-2/5 rounded-full bg-alter-500" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex justify-center">
+          <Segmented
+            label="Cómo quieres buscar"
+            value={mode}
+            onChange={setMode}
+            options={[
+              { value: "url", label: "Enlace" },
+              { value: "image", label: "Foto" },
+            ]}
+          />
         </div>
 
         <AnimatePresence mode="wait" initial={false}>
           {mode === "url" ? (
             <motion.div
               key="url"
-              initial={{ opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-2 px-1"
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease: APPLE_EASE }}
+              className="mt-6 space-y-3"
             >
               <label htmlFor="url" className="sr-only">
                 Enlace del producto nuevo
@@ -130,42 +136,43 @@ export default function SearchPanel() {
                 id="url"
                 type="url"
                 inputMode="url"
-                placeholder="https://tienda.com/producto-que-ibas-a-comprar"
+                placeholder="Enlace del producto en la tienda"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="w-full rounded-2xl border border-alter-100 bg-white px-4 py-3.5 text-base outline-none transition placeholder:text-alter-900/35 focus:border-alter-400 focus:ring-4 focus:ring-alter-100"
+                className={`${field} h-14`}
               />
               <input
                 type="text"
-                placeholder="Detalles opcionales (talla, color, presupuesto…)"
+                aria-label="Detalles opcionales"
+                placeholder="Detalles opcionales: talla, color, presupuesto…"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 maxLength={1000}
-                className="w-full rounded-2xl border border-transparent bg-alter-50/60 px-4 py-2.5 text-sm outline-none transition placeholder:text-alter-900/40 focus:border-alter-200 focus:bg-white"
+                className={`${field} h-12 text-[15px]`}
               />
             </motion.div>
           ) : (
             <motion.div
               key="image"
-              initial={{ opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-2 px-1"
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease: APPLE_EASE }}
+              className="mt-6 space-y-3"
             >
               {preview ? (
-                <div className="relative flex items-center gap-4 rounded-2xl border border-alter-100 bg-alter-50/50 p-3">
+                <div className="flex items-center gap-4 rounded-xl bg-paper p-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={preview} alt="Foto subida" className="size-20 rounded-xl object-cover" />
-                  <div className="min-w-0 flex-1 text-sm">
-                    <p className="truncate font-medium text-alter-900">{file?.name}</p>
-                    <p className="text-alter-900/50">{file ? (file.size / 1024 / 1024).toFixed(1) : 0} MB</p>
+                  <img src={preview} alt="Foto subida" className="size-16 rounded-lg object-cover" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[15px] text-ink">{file?.name}</p>
+                    <p className="text-xs text-ink-3">{file ? (file.size / 1024 / 1024).toFixed(1) : 0} MB</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => pickFile(null)}
                     aria-label="Quitar foto"
-                    className="rounded-full p-2 text-alter-900/50 transition hover:bg-white hover:text-alter-700"
+                    className="grid size-8 place-items-center rounded-full bg-black/5 text-ink-2 transition hover:bg-black/10"
                   >
                     <X className="size-4" />
                   </button>
@@ -178,11 +185,11 @@ export default function SearchPanel() {
                     const f = e.dataTransfer.files?.[0];
                     if (f?.type.startsWith("image/")) pickFile(f);
                   }}
-                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-alter-200 bg-alter-50/40 px-4 py-7 text-center transition hover:border-alter-400 hover:bg-alter-50"
+                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl bg-paper px-4 py-10 text-center transition duration-300 hover:bg-[#ececf0]"
                 >
-                  <Upload className="size-6 text-alter-500" />
-                  <span className="text-sm font-medium text-alter-800">Arrastra una foto o haz clic para elegirla</span>
-                  <span className="text-xs text-alter-900/50">JPG, PNG o WEBP · máx. 5 MB</span>
+                  <ImagePlus className="size-7 text-alter-500" strokeWidth={1.5} />
+                  <span className="text-[17px] text-ink">Arrastra una foto o elige una</span>
+                  <span className="text-xs text-ink-3">JPG, PNG o WEBP · hasta 5 MB</span>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp,image/gif"
@@ -192,63 +199,67 @@ export default function SearchPanel() {
                 </label>
               )}
               <textarea
-                placeholder="Describe el objeto: marca, materiales, dimensiones…"
+                aria-label="Descripción del objeto"
+                placeholder="Descríbelo si quieres: marca, materiales, medidas…"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={1000}
                 rows={2}
-                className="w-full resize-none rounded-2xl border border-alter-100 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-alter-900/35 focus:border-alter-400 focus:ring-4 focus:ring-alter-100"
+                className={`${field} resize-none py-3 text-[15px]`}
               />
               <input
                 type="text"
                 inputMode="decimal"
-                placeholder="Precio nuevo en € (opcional, para calcular el ahorro)"
+                aria-label="Precio nuevo en euros"
+                placeholder="Precio nuevo en € (para calcular el ahorro)"
                 value={newPrice}
                 onChange={(e) => setNewPrice(e.target.value.replace(/[^\d.,]/g, ""))}
-                className="w-full rounded-2xl border border-transparent bg-alter-50/60 px-4 py-2.5 text-sm outline-none transition placeholder:text-alter-900/40 focus:border-alter-200 focus:bg-white"
+                className={`${field} h-12 text-[15px]`}
               />
             </motion.div>
           )}
         </AnimatePresence>
 
-        <motion.button
+        <button
           type="submit"
           disabled={loading}
-          whileTap={{ scale: 0.98 }}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-alter-500 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-alter-500/30 transition hover:bg-alter-600 disabled:cursor-wait disabled:opacity-80"
+          className="mt-6 h-12 w-full rounded-full bg-alter-500 text-[17px] text-white transition-colors duration-300 hover:bg-alter-600 disabled:cursor-wait disabled:bg-alter-400"
         >
-          {loading ? <Loader2 className="size-5 animate-spin" /> : <Search className="size-5" />}
-          {loading ? "Buscando alternativas…" : "Buscar alternativas de segunda mano"}
-        </motion.button>
+          {loading ? "Buscando…" : "Buscar alternativas"}
+        </button>
 
-        <AnimatePresence>
-          {loading && (
-            <motion.p
-              key={step}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              aria-live="polite"
-              className="mt-3 text-center text-sm text-alter-700"
-            >
-              {STEPS[step]}
-            </motion.p>
-          )}
-          {error && !loading && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              role="alert"
-              className="mt-3 rounded-xl bg-red-50 px-4 py-2.5 text-center text-sm text-red-700"
-            >
-              {error}
-            </motion.p>
-          )}
-        </AnimatePresence>
+        <div className="min-h-6 pt-3 text-center" aria-live="polite">
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.p
+                key={step}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="text-[15px] text-ink-2"
+              >
+                {STEPS[step]}
+              </motion.p>
+            ) : (
+              error && (
+                <motion.p
+                  key="error"
+                  role="alert"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="text-[15px] text-[#d70015]"
+                >
+                  {error}
+                </motion.p>
+              )
+            )}
+          </AnimatePresence>
+        </div>
       </form>
 
-      <div ref={resultsRef} className="scroll-mt-6">
+      <div ref={resultsRef} className="scroll-mt-16">
         {result && <Results key={searchCount} data={result} image={resultImage} />}
       </div>
     </div>

@@ -1,8 +1,10 @@
-import { Camera, Leaf, Link2, Recycle, ScanSearch, Tags } from "lucide-react";
-import Link from "next/link";
+import { Camera, Link2, ScanSearch, Tags } from "lucide-react";
 
-import Logo from "@/components/Logo";
+import Hero from "@/components/Hero";
+import Footer from "@/components/Footer";
+import Nav from "@/components/Nav";
 import Reveal from "@/components/Reveal";
+import ScrollText from "@/components/ScrollText";
 import SearchPanel from "@/components/SearchPanel";
 
 const PLATFORMS = ["Wallapop", "Milanuncios", "Vinted", "eBay", "Cash Converters", "Secondbest", "Todocolección"];
@@ -10,123 +12,112 @@ const PLATFORMS = ["Wallapop", "Milanuncios", "Vinted", "eBay", "Cash Converters
 const STEPS = [
   {
     icon: Link2,
-    title: "Pega el enlace o sube una foto",
-    text: "El enlace de la tienda donde ibas a comprarlo nuevo, o una foto con una descripción (marca, materiales, medidas…).",
+    title: "Pega un enlace.",
+    alt: Camera,
+    altTitle: "O sube una foto.",
+    text: "El enlace de la tienda donde ibas a comprarlo nuevo. O una foto, con marca, materiales o medidas si los sabes.",
   },
   {
     icon: ScanSearch,
-    title: "La IA analiza el objeto",
-    text: "Reconoce el producto, sus especificaciones y materiales, y busca ese mismo objeto o similares en las principales webs de segunda mano.",
+    title: "La IA lo entiende.",
+    text: "Reconoce el producto y sus características, y lo busca en las principales webs de segunda mano.",
   },
   {
     icon: Tags,
-    title: "Compara y ahorra",
-    text: "Recibes enlaces directos a los anuncios con su precio, la comparación con el precio nuevo y el % que te ahorras.",
+    title: "Tú ahorras.",
+    text: "Enlaces directos a cada anuncio, su precio y cuánto te ahorras frente a comprarlo nuevo.",
   },
+];
+
+const FIGURES = [
+  { value: "7", label: "webs de segunda mano en una sola búsqueda" },
+  { value: "0 €", label: "lo que cuesta usar Alter" },
+  { value: "1 clic", label: "del objeto nuevo a su alternativa" },
 ];
 
 export default function Home() {
   return (
     <>
-      <header className="bg-grain">
-        <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
-          <Link href="/" aria-label="Alter, inicio">
-            <Logo />
-          </Link>
-          <a
-            href="#como-funciona"
-            className="rounded-full px-4 py-2 text-sm font-medium text-alter-800 transition hover:bg-white/70"
-          >
-            Cómo funciona
-          </a>
-        </nav>
+      <Nav />
 
-        <main className="mx-auto max-w-6xl px-4 pb-20 pt-10 sm:px-6 sm:pt-16">
-          <Reveal className="mx-auto max-w-3xl text-center">
-            <p className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-alter-200 bg-white/70 px-3 py-1 text-xs font-medium text-alter-700">
-              <Leaf className="size-3.5" /> Gratis · Alternativas que ayudan al planeta
-            </p>
-            <h1 className="font-display text-4xl font-bold leading-[1.05] tracking-tight text-alter-950 sm:text-6xl">
-              Antes de comprarlo nuevo,{" "}
-              <span className="bg-gradient-to-r from-alter-500 to-alter-400 bg-clip-text text-transparent">búscalo de segunda mano</span>
-            </h1>
-            <p className="mx-auto mt-5 max-w-xl text-lg text-alter-900/65">
-              Pega el enlace de lo que ibas a comprar o sube una foto. Alter encuentra el mismo objeto o alternativas
-              parecidas en las webs de segunda mano y te dice cuánto ahorras.
-            </p>
+      <main>
+        <Hero />
+
+        {/* Buscador */}
+        <section id="buscar" className="bg-paper px-4 py-20 sm:px-6 sm:py-28">
+          <Reveal className="mx-auto max-w-[680px] text-center">
+            <h2 className="headline text-[36px] sm:text-[56px]">¿Qué ibas a comprar?</h2>
+            <p className="mt-3 text-[19px] text-ink-2 sm:text-[21px]">Lo buscamos de segunda mano por ti.</p>
           </Reveal>
-
-          <Reveal delay={0.1} className="mt-10">
+          <Reveal delay={0.1} className="mt-12">
             <SearchPanel />
           </Reveal>
+          <Reveal delay={0.2} className="mx-auto mt-12 max-w-[680px] text-center text-xs leading-relaxed text-ink-3">
+            Buscamos en {PLATFORMS.slice(0, -1).join(", ")} y {PLATFORMS.at(-1)}.
+          </Reveal>
+        </section>
 
-          <Reveal delay={0.2} className="mx-auto mt-10 max-w-3xl">
-            <p className="text-center text-xs font-medium uppercase tracking-wider text-alter-900/40">Buscamos en</p>
-            <ul className="mt-3 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-semibold text-alter-900/55">
-              {PLATFORMS.map((p) => (
-                <li key={p}>{p}</li>
+        {/* Cómo funciona */}
+        <section id="como-funciona" className="bg-white px-4 py-24 sm:px-6 sm:py-32">
+          <div className="mx-auto max-w-[1024px]">
+            <Reveal>
+              <h2 className="headline text-[40px] sm:text-[64px]">Así de fácil.</h2>
+            </Reveal>
+            <ol className="mt-14 grid gap-5 md:grid-cols-3">
+              {STEPS.map((s, i) => (
+                <Reveal as="li" key={s.title} delay={i * 0.12} className="flex flex-col rounded-[28px] bg-paper p-8 sm:p-10">
+                  <span className="text-[15px] font-semibold text-ink-3">{i + 1}</span>
+                  <div className="mt-10 flex gap-3 text-alter-500">
+                    <s.icon className="size-8" strokeWidth={1.5} />
+                    {s.alt && <s.alt className="size-8" strokeWidth={1.5} />}
+                  </div>
+                  <h3 className="headline mt-6 text-[28px]">
+                    {s.title}
+                    {s.altTitle && <span className="block text-ink-3">{s.altTitle}</span>}
+                  </h3>
+                  <p className="mt-3 text-[17px] text-ink-2">{s.text}</p>
+                </Reveal>
               ))}
-            </ul>
-          </Reveal>
-        </main>
-      </header>
+            </ol>
+          </div>
+        </section>
 
-      <section id="como-funciona" className="scroll-mt-10 bg-white py-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <Reveal>
-            <h2 className="font-display text-3xl font-bold tracking-tight text-alter-950 sm:text-4xl">Cómo funciona</h2>
-          </Reveal>
-          <ol className="mt-10 grid gap-5 md:grid-cols-3">
-            {STEPS.map((s, i) => (
-              <Reveal as="li" key={s.title} delay={i * 0.08} className="rounded-3xl border border-alter-100 p-6">
-                <div className="flex items-center justify-between">
-                  <span className="grid size-11 place-items-center rounded-2xl bg-alter-500 text-white">
-                    <s.icon className="size-5" />
-                  </span>
-                  <span className="font-display text-4xl font-bold text-alter-100">0{i + 1}</span>
-                </div>
-                <h3 className="mt-5 text-lg font-semibold text-alter-950">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-alter-900/65">{s.text}</p>
-              </Reveal>
-            ))}
-          </ol>
-        </div>
-      </section>
+        {/* Impacto: texto que se revela con el scroll */}
+        <section id="impacto" className="bg-white px-4 pb-24 pt-8 sm:px-6 sm:pb-36">
+          <div className="mx-auto max-w-[1024px]">
+            <ScrollText
+              className="text-[32px] sm:text-[48px] lg:text-[56px]"
+              text="Cada objeto que compras de segunda mano es uno que no hay que fabricar, empaquetar ni transportar. Reutilizar debería ser tan fácil como comprar nuevo. Ahora lo es."
+            />
+            <div className="mt-20 grid gap-10 border-t border-line pt-10 sm:grid-cols-3 sm:gap-6">
+              {FIGURES.map((f, i) => (
+                <Reveal key={f.label} delay={i * 0.1}>
+                  <p className="headline text-[48px] sm:text-[56px]">
+                    <span className="text-gradient">{f.value}</span>
+                  </p>
+                  <p className="mt-2 max-w-[240px] text-[17px] text-ink-2">{f.label}</p>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
 
-      <section className="bg-alter-950 py-20 text-white">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 md:grid-cols-2">
-          <Reveal>
-            <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-              Menos objetos nuevos, <span className="text-alter-300">más vida para los que ya existen</span>
-            </h2>
-            <p className="mt-4 text-alter-100/75">
-              Cada objeto que compras de segunda mano es uno que no hay que fabricar, empaquetar ni transportar. Alter
-              quiere que reutilizar sea tan fácil como comprar nuevo: el mismo producto, al alcance de un clic, y más barato.
-            </p>
+        {/* Llamada final */}
+        <section className="bg-paper px-4 py-24 text-center sm:px-6 sm:py-32">
+          <Reveal className="mx-auto max-w-[680px]">
+            <h2 className="headline text-[40px] sm:text-[64px]">Tu próxima compra ya existe.</h2>
+            <p className="mt-4 text-[19px] text-ink-2 sm:text-[21px]">Solo hay que encontrarla.</p>
+            <a
+              href="#buscar"
+              className="mt-9 inline-block rounded-full bg-alter-500 px-6 py-3 text-[17px] text-white transition-colors duration-300 hover:bg-alter-600"
+            >
+              Empezar a buscar
+            </a>
           </Reveal>
-          <Reveal delay={0.1} className="grid grid-cols-2 gap-4">
-            {[
-              { icon: Recycle, title: "Reutiliza", text: "Alarga la vida útil de los objetos" },
-              { icon: Leaf, title: "Reduce", text: "Menos fabricación y menos residuos" },
-              { icon: Tags, title: "Ahorra", text: "Compara el precio nuevo y el de segunda mano" },
-              { icon: Camera, title: "Fácil", text: "Un enlace o una foto, nada más" },
-            ].map((c) => (
-              <div key={c.title} className="rounded-3xl bg-white/5 p-5 ring-1 ring-white/10">
-                <c.icon className="size-5 text-alter-300" />
-                <p className="mt-3 font-semibold">{c.title}</p>
-                <p className="mt-1 text-sm text-alter-100/60">{c.text}</p>
-              </div>
-            ))}
-          </Reveal>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      <footer className="border-t border-alter-100 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-8 text-sm text-alter-900/50 sm:flex-row sm:px-6">
-          <Logo small />
-          <p>Alter es gratis. Los anuncios pertenecen a cada plataforma; los marcados como «Patrocinado» aparecen destacados por acuerdo comercial.</p>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 }

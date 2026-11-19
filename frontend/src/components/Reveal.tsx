@@ -3,7 +3,9 @@
 import { motion } from "motion/react";
 import type { ReactNode } from "react";
 
-/** Aparece con un pequeño desplazamiento cuando entra en pantalla. */
+export const APPLE_EASE = [0.28, 0.11, 0.32, 1] as const;
+
+/** Aparece suavemente, subiendo un poco, cuando entra en pantalla. */
 export default function Reveal({
   children,
   className,
@@ -19,10 +21,10 @@ export default function Reveal({
   return (
     <Component
       className={className}
-      initial={{ opacity: 0, y: 18 }}
+      initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 1, delay, ease: APPLE_EASE }}
     >
       {children}
     </Component>
