@@ -28,6 +28,8 @@ class Settings:
     force_demo: bool = field(default_factory=lambda: _bool(os.getenv("ALTER_DEMO_MODE")))
     max_results_per_platform: int = field(default_factory=lambda: int(os.getenv("ALTER_MAX_RESULTS", "12")))
     apify_timeout_s: float = field(default_factory=lambda: float(os.getenv("ALTER_APIFY_TIMEOUT", "120")))
+    # El plan gratuito de Apify admite 5 ejecuciones a la vez y 16 GB de memoria en total.
+    apify_max_concurrency: int = field(default_factory=lambda: int(os.getenv("ALTER_APIFY_MAX_CONCURRENCY", "4")))
     allowed_origins: list[str] = field(
         default_factory=lambda: [
             o.strip() for o in os.getenv("ALTER_ALLOWED_ORIGINS", "http://localhost:3000").split(",") if o.strip()

@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 
 import { track } from "@/lib/analytics";
 import { formatEur, PLATFORM_COLORS, PLATFORM_NAMES, type Listing, type SearchResponse } from "@/lib/api";
+import PlatformMark from "./PlatformMark";
 import { APPLE_EASE } from "./Reveal";
 import Segmented from "./Segmented";
 
@@ -16,10 +17,13 @@ export default function Results({
   data,
   image,
   emptyIllustration = null,
+  logos = [],
 }: {
   data: SearchResponse;
   image: string | null;
   emptyIllustration?: string | null;
+  /** Claves de las webs con logo en public/logos/. */
+  logos?: string[];
 }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<Sort>("recommended");
@@ -167,7 +171,7 @@ export default function Results({
       {listings.length > 0 ? (
         <ul className="mt-8 grid gap-x-5 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {listings.map((l, i) => (
-            <ListingCard key={l.id} listing={l} index={i} sort={sort} />
+            <ListingCard key={l.id} listing={l} index={i} sort={sort} hasLogoFile={logos.includes(l.platform)} />
           ))}
         </ul>
       ) : (
@@ -216,7 +220,17 @@ export default function Results({
   );
 }
 
-function ListingCard({ listing: l, index, sort }: { listing: Listing; index: number; sort: Sort }) {
+function ListingCard({
+  listing: l,
+  index,
+  sort,
+  hasLogoFile,
+}: {
+  listing: Listing;
+  index: number;
+  sort: Sort;
+  hasLogoFile: boolean;
+}) {
   const color = PLATFORM_COLORS[l.platform] ?? "#6C3CE1";
   // Si la foto no carga (enlace caducado, bloqueo de la web…), se muestra el icono en lugar de una imagen rota.
   const [imageFailed, setImageFailed] = useState(false);
@@ -268,8 +282,13 @@ function ListingCard({ listing: l, index, sort }: { listing: Listing; index: num
 
         <div className="mt-4 px-1">
           <p className="flex items-center gap-1.5 text-xs text-ink-2">
-            <span className="size-1.5 rounded-full" style={{ background: color }} />
-            {PLATFORM_NAMES[l.platform] ?? l.platform}
+            <PlatformMark
+              platformKey={l.platform}
+              name={PLATFORM_NAMES[l.platform] ?? l.platform}
+              color={color}
+              hasLogoFile={hasLogoFile}
+              size="sm"
+            />
             {l.sponsored && <span className="text-ink-3">· Patrocinado</span>}
           </p>
           <h3 className="mt-1.5 line-clamp-2 text-[17px] font-semibold leading-snug text-ink transition-colors group-hover:text-alter-600">

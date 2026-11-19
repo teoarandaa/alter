@@ -90,7 +90,8 @@ async def run_search(profile: ProductProfile, source_image: str | None = None, a
     """ai_used=False si el análisis tuvo que hacerse sin Claude: tampoco se usa para puntuar."""
     ai_used = ai_used and settings.ai_enabled
     platforms = load_platforms()
-    apify_platforms = [p for p in platforms.values() if p.type == "apify"]
+    # Los generales siempre; los especializados (p. ej. electrónica) solo si encajan con el producto.
+    apify_platforms = [p for p in platforms.values() if p.searchable and p.applies_to(profile.category_group)]
 
     async with httpx.AsyncClient() as client:
         results = await asyncio.gather(*(_search_platform(p, profile, client) for p in apify_platforms))

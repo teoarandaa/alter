@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any, Callable
-from urllib.parse import quote_plus
+from urllib.parse import quote, quote_plus
 
 import httpx
 
@@ -24,7 +25,7 @@ APIFY_RUN_URL = "https://api.apify.com/v2/acts/{actor}/run-sync-get-dataset-item
 class Platform:
     key: str
     name: str
-    type: str  # "apify" | "link"
+    type: str  # "apify" (actor normal) | "apify_standby" (actor que funciona como API) | "link"
     priority: int
     sponsored: bool
     color: str
@@ -32,6 +33,16 @@ class Platform:
     max_results: int = 10
     search_url: str | None = None
     categories: tuple[str, ...] = ("general",)
+    standby_url: str | None = None
+    memory_mb: int | None = None
+
+    @property
+    def searchable(self) -> bool:
+        """True si Alter descarga sus anuncios (y no solo enlaza su búsqueda)."""
+        return self.type in ("apify", "apify_standby")
+
+    def applies_to(self, category_group: str) -> bool:
+        return "general" in self.categories or category_group in self.categories
 
 
 @lru_cache
@@ -50,6 +61,8 @@ def load_platforms() -> dict[str, Platform]:
             max_results=int(cfg.get("max_results", settings.max_results_per_platform)),
             search_url=cfg.get("search_url"),
             categories=tuple(cfg.get("categories", ["general"])),
+            standby_url=cfg.get("standby_url"),
+            memory_mb=cfg.get("memory_mb"),
         )
     return platforms
 
@@ -83,6 +96,35 @@ def _input_ebay(query: str, limit: int) -> dict:
         "includeLegacyFields": False,
         "includeSummary": False,
     }
+
+
+def _input_backmarket(query: str, limit: int) -> dict:
+    return {"searchText": query, "country": "es", "maxItems": limit}
+
+
+def _input_amazonrenewed(query: str, limit: int) -> dict:
+    # i=renewed limita la búsqueda a Amazon Reacondicionados.
+    return {
+        "categoryOrProductUrls": [{"url": f"https://www.amazon.es/s?k={quote_plus(query)}&i=renewed"}],
+        "maxItemsPerStartUrl": limit,
+        "maxSearchPagesPerStartUrl": 1,
+        "scrapeProductDetails": False,
+        "language": "es",
+    }
+
+
+def _input_cex(query: str, limit: int) -> dict:
+    return {
+        "country_code": "es",
+        "search_input": query,
+        "max_items": limit,
+        "include_trade_values": False,
+        "include_stock_status": True,
+    }
+
+
+def _params_refurbed(query: str, limit: int) -> dict:
+    return {"query": query, "country": "es", "maxResults": limit}
 
 
 # ---------------------------------------------------------------------------
@@ -167,12 +209,107 @@ def _norm_ebay(item: dict) -> Listing | None:
     )
 
 
+_GRADES = {"A": "Excelente", "B": "Muy bueno", "C": "Bueno"}
+
+
+def _norm_backmarket(item: dict) -> Listing | None:
+    if (item.get("currency") or "EUR").upper() != "EUR":
+        return None
+    condition = item.get("condition") or "Reacondicionado"
+    if item.get("warrantyMonths"):
+        condition = f"{condition} · {item['warrantyMonths']} meses de garantía"
+    return Listing(
+        id=f"backmarket-{item.get('id')}",
+        platform="backmarket",
+        title=item.get("title") or item.get("model") or "",
+        price_eur=parse_price(item.get("price")),
+        url=item.get("url") or "",
+        image=_image(item.get("imageUrl")),
+        condition=condition,
+    )
+
+
+def _norm_refurbed(item: dict) -> Listing | None:
+    if (item.get("currency") or "EUR").upper() != "EUR":
+        return None
+    grade = (item.get("condition") or "").upper()
+    variant = (item.get("variant") or "").split(" | Grade")[0]
+    grade_text = _GRADES.get(grade, f"grado {grade}")
+    return Listing(
+        id=f"refurbed-{(item.get('url') or '').rstrip('/').rsplit('/', 1)[-1]}",
+        platform="refurbed",
+        title=" · ".join(filter(None, [item.get("title"), variant])),
+        price_eur=parse_price(item.get("price")),
+        url=item.get("url") or "",
+        image=_image(item.get("imageUrl")),
+        condition=f"Reacondicionado · {grade_text}" if grade else "Reacondicionado",
+    )
+
+
+def _norm_amazonrenewed(item: dict) -> Listing | None:
+    price = item.get("price") or {}
+    if isinstance(price, dict):
+        if (price.get("currency") or "€") not in {"€", "EUR"}:
+            return None
+        price = price.get("value")
+    asin = item.get("asin")
+    if not asin:
+        return None
+    return Listing(
+        id=f"amazonrenewed-{asin}",
+        platform="amazonrenewed",
+        title=(item.get("title") or "").replace(" (Reacondicionado)", ""),
+        price_eur=parse_price(price),
+        url=f"https://www.amazon.es/dp/{asin}",
+        image=_image(item.get("imageUrl")),
+        condition="Reacondicionado",
+    )
+
+
+def _cex_image(url: str | None) -> str | None:
+    """CeX da la ruta de la imagen con espacios y acentos sin codificar."""
+    if not url or not url.startswith("http"):
+        return None
+    scheme, _, rest = url.partition("://")
+    host, _, path = rest.partition("/")
+    return f"{scheme}://{host}/{quote(path)}"
+
+
+def _norm_cex(item: dict) -> Listing | None:
+    box = item.get("boxId")
+    if not box or item.get("in_stock") is False:
+        return None
+    return Listing(
+        id=f"cex-{box}",
+        platform="cex",
+        title=item.get("title") or "",
+        price_eur=parse_price(item.get("sellPrice")),
+        url=f"https://es.webuy.com/product-detail/?id={quote_plus(box)}",
+        image=_cex_image(item.get("image_medium") or item.get("image")),
+        condition="Usado · con garantía de CeX",
+    )
+
+
 ADAPTERS: dict[str, tuple[Callable[[str, int], dict], Callable[[dict], Listing | None]]] = {
     "wallapop": (_input_wallapop, _norm_wallapop),
     "milanuncios": (_input_milanuncios, _norm_milanuncios),
     "vinted": (_input_vinted, _norm_vinted),
     "ebay": (_input_ebay, _norm_ebay),
+    "backmarket": (_input_backmarket, _norm_backmarket),
+    "amazonrenewed": (_input_amazonrenewed, _norm_amazonrenewed),
+    "cex": (_input_cex, _norm_cex),
+    "refurbed": (_params_refurbed, _norm_refurbed),
 }
+
+# Límite de scrapers ejecutándose a la vez (un semáforo por bucle de eventos).
+_slots: dict[int, asyncio.Semaphore] = {}
+
+
+def _apify_slot() -> asyncio.Semaphore:
+    loop_id = id(asyncio.get_running_loop())
+    if loop_id not in _slots:
+        _slots[loop_id] = asyncio.Semaphore(max(1, settings.apify_max_concurrency))
+    return _slots[loop_id]
 
 
 def normalize_items(platform_key: str, items: list[dict], limit: int) -> list[Listing]:
@@ -200,15 +337,32 @@ def normalize_items(platform_key: str, items: list[dict], limit: int) -> list[Li
 
 async def search_apify(platform: Platform, query: str, client: httpx.AsyncClient) -> list[Listing]:
     build_input, _ = ADAPTERS[platform.key]
-    resp = await client.post(
-        APIFY_RUN_URL.format(actor=platform.actor),
-        params={"timeout": int(settings.apify_timeout_s), "clean": "true"},
-        headers={"Authorization": f"Bearer {settings.apify_token}"},
-        json=build_input(query, platform.max_results),
-        timeout=settings.apify_timeout_s + 15,
-    )
-    resp.raise_for_status()
-    items = resp.json()
+    headers = {"Authorization": f"Bearer {settings.apify_token}"}
+    async with _apify_slot():
+        if platform.type == "apify_standby":
+            # Actor que funciona como API: GET /search; responde {"ok": true, "data": [...]}.
+            resp = await client.get(
+                f"{(platform.standby_url or '').rstrip('/')}/search",
+                params=build_input(query, platform.max_results),
+                headers=headers,
+                timeout=settings.apify_timeout_s,
+            )
+            resp.raise_for_status()
+            body = resp.json()
+            items = body.get("data") if isinstance(body, dict) and body.get("ok") else []
+        else:
+            params: dict = {"timeout": int(settings.apify_timeout_s), "clean": "true"}
+            if platform.memory_mb:
+                params["memory"] = platform.memory_mb
+            resp = await client.post(
+                APIFY_RUN_URL.format(actor=platform.actor),
+                params=params,
+                headers=headers,
+                json=build_input(query, platform.max_results),
+                timeout=settings.apify_timeout_s + 15,
+            )
+            resp.raise_for_status()
+            items = resp.json()
     return normalize_items(platform.key, items if isinstance(items, list) else [], platform.max_results)
 
 

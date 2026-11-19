@@ -16,8 +16,10 @@ frontend/   Web en Next.js 16 + TypeScript + Tailwind + Motion
 1. **Entrada**: enlace de la tienda (`POST /api/search/url`) o foto + descripción (`POST /api/search/image`).
 2. **Análisis** (`backend/app/ai.py`): Claude lee la página del producto (título, precio, JSON-LD, imagen) o la foto
    y devuelve una ficha estructurada: nombre, marca, modelo, materiales, precio nuevo y 2-4 búsquedas.
-3. **Búsqueda** (`backend/app/platforms.py`): se lanzan en paralelo los actores de Apify de Wallapop, Milanuncios,
-   Vinted y eBay. Si la búsqueda más específica da pocos resultados, se prueba la siguiente más general.
+3. **Búsqueda** (`backend/app/platforms.py`): se lanzan los scrapers de Apify que encajan con el producto:
+   Wallapop, Milanuncios, Vinted y eBay siempre, y además Back Market, Refurbed, Amazon Reacondicionados y CeX si
+   es electrónica (CeX también para videojuegos y películas). Si la búsqueda más específica da pocos resultados,
+   se prueba la siguiente más general.
 4. **Comparación**: Claude puntúa cada anuncio (mismo producto / similar / descartado) y se calcula el ahorro.
 5. **Orden** (`backend/app/search.py`): primero coincidencias exactas; dentro, las plataformas con más
    prioridad; después las más parecidas y las más baratas.
@@ -28,10 +30,10 @@ frontend/   Web en Next.js 16 + TypeScript + Tailwind + Motion
    | Grupo | Webs enlazadas |
    | --- | --- |
    | Siempre | Cash Converters, Secondbest, Todocolección |
-   | Electrónica | Back Market, CeX, Refurbed, Rebuy, Amazon Reacondicionados |
+   | Electrónica | Rebuy (Back Market, Refurbed, Amazon y CeX dan anuncios dentro de Alter) |
    | Moda | Vestiaire Collective, Percentil, Etsy (vintage) |
    | Hogar y coleccionismo | Etsy (vintage) |
-   | Libros y ocio | Iberlibro, CeX, Rebuy |
+   | Libros y ocio | Iberlibro, Rebuy |
    | Música | Reverb |
    | Infantil | Percentil |
 
@@ -93,8 +95,15 @@ Abre http://localhost:3000.
 
 - **Claude API**: 2 llamadas por búsqueda (análisis + comparación) con `claude-opus-5-5`.
   Se puede cambiar con `CLAUDE_MODEL` en `.env`.
-- **Apify**: cada actor cobra por resultado o por ejecución; revisa los precios de cada uno.
-  `max_results` en `platforms.json` limita cuántos anuncios se piden por plataforma.
+- **Apify**: cada scraper cobra por resultado. Precios aproximados por resultado (plan gratuito, noviembre de 2026):
+  Back Market 0,0025 $, Refurbed 0,00225 $, Amazon 0,005 $ y CeX 0,001 $; con 8 resultados cada uno, una búsqueda
+  de electrónica cuesta unos 0,09 $ más que una normal. `max_results` en `platforms.json` limita cuántos anuncios
+  se piden por plataforma.
+- **Límites del plan gratuito de Apify**: 5 scrapers a la vez y 16 GB de memoria en total. Alter lanza como mucho
+  `ALTER_APIFY_MAX_CONCURRENCY` (4 por defecto) a la vez dentro de cada búsqueda, pero con varios usuarios buscando
+  al mismo tiempo se superaría el límite: al publicar hace falta un plan de pago.
+- **Vestiaire Collective, Reverb y Etsy** tienen scraper en Apify, pero devuelven anuncios de EE. UU. en dólares
+  (y Etsy tarda más de un minuto), así que de momento solo se enlazan.
 
 ## Despliegue
 

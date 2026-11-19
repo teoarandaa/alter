@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { PLATFORMS } from "@/lib/platforms";
+import { PLATFORM_SECTIONS, PLATFORMS } from "@/lib/platforms";
 
 import Logo from "./Logo";
 
@@ -11,7 +11,6 @@ const NAV = [
   { href: "/#como-funciona", label: "Cómo funciona" },
   { href: "/#impacto", label: "Impacto" },
 ];
-
 
 export default function Footer() {
   return (
@@ -38,14 +37,27 @@ export default function Footer() {
             </ul>
           </nav>
 
-          <div>
-            <h2 className="font-semibold text-ink">Buscamos en</h2>
-            <ul className="mt-3 columns-2 gap-6 [&>li]:mb-2.5 [&>li]:break-inside-avoid">
-              {PLATFORMS.map((p) => (
-                <li key={p}>{p}</li>
+          <nav aria-label="Webs en las que buscamos">
+            <h2 className="font-semibold text-ink">
+              <Link href="/plataformas" className="hover:underline">
+                Buscamos en
+              </Link>
+            </h2>
+            <ul className="mt-3 space-y-2.5">
+              {PLATFORM_SECTIONS.map((s) => (
+                <li key={s.id}>
+                  <Link href={`/plataformas#${s.id}`} className="transition-colors hover:text-ink hover:underline">
+                    {s.title}
+                  </Link>
+                </li>
               ))}
+              <li>
+                <Link href="/plataformas" className="text-alter-500 hover:underline">
+                  Ver las {PLATFORMS.length} webs ›
+                </Link>
+              </li>
             </ul>
-          </div>
+          </nav>
         </div>
 
         <p className="mt-10 border-t border-line pt-5 leading-relaxed text-ink-3">

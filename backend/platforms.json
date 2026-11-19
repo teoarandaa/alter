@@ -1,5 +1,5 @@
 {
-  "_comment": "Plataformas de segunda mano. 'priority' ordena los resultados (mayor = antes) y 'max_results' limita cuántos anuncios se muestran. Aquí se aplican los acuerdos de patrocinio: sube 'priority', 'max_results' y marca 'sponsored' para la plataforma que pague por destacar. Las de tipo 'link' se muestran como enlace a su búsqueda, solo si alguna de sus 'categories' coincide con la del producto ('general' = siempre). Categorías: general, electronica, moda, hogar, deporte, libros_ocio, musica, infantil, motor, coleccionismo.",
+  "_comment": "Plataformas de segunda mano. Tipos: 'apify' (scraper de Apify: Alter muestra sus anuncios), 'apify_standby' (scraper de Apify que funciona como API) y 'link' (solo se enlaza su búsqueda). 'categories' indica para qué productos se usa cada web ('general' = siempre); grupos: general, electronica, moda, hogar, deporte, libros_ocio, musica, infantil, motor, coleccionismo. 'priority' ordena los resultados (mayor = antes) y 'max_results' limita cuántos anuncios se piden (cada resultado de Apify cuesta dinero). Aquí se aplican los acuerdos de patrocinio: sube 'priority', 'max_results' y marca 'sponsored' para la plataforma que pague por destacar.",
   "platforms": {
     "wallapop": {
       "name": "Wallapop",
@@ -41,7 +41,9 @@
       "name": "Cash Converters",
       "type": "link",
       "search_url": "https://www.cashconverters.es/es/es/search/?q={query}",
-      "categories": ["general"],
+      "categories": [
+        "general"
+      ],
       "priority": 20,
       "sponsored": false,
       "color": "#0B3D91"
@@ -50,7 +52,9 @@
       "name": "Secondbest",
       "type": "link",
       "search_url": "https://secondbest.es/?s={query}&post_type=product",
-      "categories": ["general"],
+      "categories": [
+        "general"
+      ],
       "priority": 20,
       "sponsored": false,
       "color": "#222222"
@@ -59,35 +63,47 @@
       "name": "Todocolección",
       "type": "link",
       "search_url": "https://www.todocoleccion.net/buscador?bu={query}",
-      "categories": ["general"],
+      "categories": [
+        "general"
+      ],
       "priority": 20,
       "sponsored": false,
       "color": "#C8102E"
     },
     "backmarket": {
       "name": "Back Market",
-      "type": "link",
-      "search_url": "https://www.backmarket.es/es-es/search?q={query}",
-      "categories": ["electronica"],
+      "type": "apify",
+      "actor": "silentflow~backmarket-scraper-ppr",
+      "categories": [
+        "electronica"
+      ],
       "priority": 25,
+      "max_results": 8,
       "sponsored": false,
       "color": "#000000"
     },
     "cex": {
       "name": "CeX",
-      "type": "link",
-      "search_url": "https://es.webuy.com/search?stext={query}",
-      "categories": ["electronica", "libros_ocio"],
+      "type": "apify",
+      "actor": "sync-network~cex-product-scraper-uk-webuy-com",
+      "categories": [
+        "electronica",
+        "libros_ocio"
+      ],
       "priority": 25,
+      "max_results": 8,
       "sponsored": false,
       "color": "#E3001B"
     },
     "refurbed": {
       "name": "Refurbed",
-      "type": "link",
-      "search_url": "https://www.refurbed.es/search/?query={query}",
-      "categories": ["electronica"],
+      "type": "apify_standby",
+      "standby_url": "https://hennobit--refurbed-scraper.apify.actor",
+      "categories": [
+        "electronica"
+      ],
       "priority": 25,
+      "max_results": 8,
       "sponsored": false,
       "color": "#1A1A1A"
     },
@@ -95,17 +111,23 @@
       "name": "Rebuy",
       "type": "link",
       "search_url": "https://www.rebuy.es/comprar/search?q={query}",
-      "categories": ["electronica", "libros_ocio"],
+      "categories": [
+        "electronica",
+        "libros_ocio"
+      ],
       "priority": 25,
       "sponsored": false,
       "color": "#00A0E2"
     },
     "amazonrenewed": {
       "name": "Amazon Reacondicionados",
-      "type": "link",
-      "search_url": "https://www.amazon.es/s?k={query}&i=renewed",
-      "categories": ["electronica"],
+      "type": "apify",
+      "actor": "junglee~Amazon-crawler",
+      "categories": [
+        "electronica"
+      ],
       "priority": 20,
+      "max_results": 8,
       "sponsored": false,
       "color": "#FF9900"
     },
@@ -113,7 +135,9 @@
       "name": "Vestiaire Collective",
       "type": "link",
       "search_url": "https://es.vestiairecollective.com/search/?q={query}",
-      "categories": ["moda"],
+      "categories": [
+        "moda"
+      ],
       "priority": 25,
       "sponsored": false,
       "color": "#1A1A1A"
@@ -122,7 +146,10 @@
       "name": "Percentil",
       "type": "link",
       "search_url": "https://percentil.com/?km_q={query}",
-      "categories": ["moda", "infantil"],
+      "categories": [
+        "moda",
+        "infantil"
+      ],
       "priority": 25,
       "sponsored": false,
       "color": "#F25C54"
@@ -131,7 +158,9 @@
       "name": "Iberlibro",
       "type": "link",
       "search_url": "https://www.iberlibro.com/servlet/SearchResults?kn={query}",
-      "categories": ["libros_ocio"],
+      "categories": [
+        "libros_ocio"
+      ],
       "priority": 25,
       "sponsored": false,
       "color": "#C8102E"
@@ -140,7 +169,9 @@
       "name": "Reverb",
       "type": "link",
       "search_url": "https://reverb.com/es/marketplace?query={query}&condition=used",
-      "categories": ["musica"],
+      "categories": [
+        "musica"
+      ],
       "priority": 25,
       "sponsored": false,
       "color": "#F25C1F"
@@ -149,7 +180,11 @@
       "name": "Etsy (vintage)",
       "type": "link",
       "search_url": "https://www.etsy.com/es/search?q={query}+vintage",
-      "categories": ["hogar", "moda", "coleccionismo"],
+      "categories": [
+        "hogar",
+        "moda",
+        "coleccionismo"
+      ],
       "priority": 20,
       "sponsored": false,
       "color": "#F1641E"

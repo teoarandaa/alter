@@ -110,10 +110,11 @@ def test_links_for_platforms_without_api():
     )
 
     electronics = [l.platform for l in build_links("iphone 13", "electronica")]
-    # Primero las especializadas en electrónica, después las generales; nada de moda o libros.
-    assert set(electronics[:5]) == {"backmarket", "cex", "refurbed", "rebuy", "amazonrenewed"}
-    assert set(electronics[5:]) == general
-    assert "percentil" not in electronics and "iberlibro" not in electronics
+    # Primero las especializadas en electrónica que solo se enlazan, después las generales.
+    # Back Market, Refurbed, Amazon y CeX no salen como enlace: Alter muestra sus anuncios.
+    assert electronics[0] == "rebuy"
+    assert set(electronics[1:]) == general
+    assert not {"backmarket", "refurbed", "amazonrenewed", "cex", "percentil", "iberlibro"} & set(electronics)
 
     fashion = {l.platform for l in build_links("abrigo", "moda")}
     assert {"vestiaire", "percentil", "etsyvintage"} <= fashion and "backmarket" not in fashion
@@ -265,3 +266,46 @@ def test_milanuncios_image_gets_size_rule():
         10,
     )
     assert items[0].image == "https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/abc?rule=detail_640x480"
+
+
+def test_scrapers_chosen_by_product_group():
+    platforms = load_platforms()
+    def scrapers(group):
+        return {p.key for p in platforms.values() if p.searchable and p.applies_to(group)}
+    general = {"wallapop", "milanuncios", "vinted", "ebay"}
+    assert scrapers("general") == general
+    assert scrapers("moda") == general
+    assert scrapers("electronica") == general | {"backmarket", "refurbed", "amazonrenewed", "cex"}
+    assert scrapers("libros_ocio") == general | {"cex"}
+
+
+def test_normalize_new_electronics_scrapers():
+    bm = normalize_items("backmarket", [{
+        "id": "ef56", "url": "https://www.backmarket.es/es-es/p/iphone-13/ef56", "title": "iPhone 13", "model": "iPhone 13",
+        "price": 263, "currency": "EUR", "condition": "Correcto", "imageUrl": "https://img/bm.jpg", "warrantyMonths": 24,
+    }, {"id": "usd", "url": "https://x", "title": "iPhone", "price": 1, "currency": "USD"}], 10)
+    assert [l.id for l in bm] == ["backmarket-ef56"]
+    assert bm[0].price_eur == 263 and bm[0].condition == "Correcto · 24 meses de garantía"
+
+    rf = normalize_items("refurbed", [{
+        "title": "iPhone 13", "price": 255, "currency": "EUR", "condition": "B",
+        "variant": "128 GB | Dual-SIM | Medianoche | Grade B (14162)", "url": "https://www.refurbed.es/p/iphone-13/14162b/",
+        "imageUrl": "https://files.refurbed.com/pi/iphone-13.jpg",
+    }], 10)
+    assert rf[0].id == "refurbed-14162b" and rf[0].title == "iPhone 13 · 128 GB | Dual-SIM | Medianoche"
+    assert rf[0].condition == "Reacondicionado · Muy bueno"
+
+    az = normalize_items("amazonrenewed", [{
+        "asin": "B09MGFJK73", "title": "Apple iPhone 13, 128GB, Medianoche (Reacondicionado)",
+        "price": {"value": 261.06, "currency": "€"}, "imageUrl": "https://m.media-amazon.com/i.jpg",
+    }], 10)
+    assert az[0].url == "https://www.amazon.es/dp/B09MGFJK73" and az[0].price_eur == 261.06
+    assert "(Reacondicionado)" not in az[0].title
+
+    cex = normalize_items("cex", [{
+        "boxId": "SAPPI13128GALIBB", "title": "Apple iPhone 13 128GB Azul, Libre B", "sellPrice": 320, "in_stock": True,
+        "image_medium": "https://es.static.webuy.com/product_images/Móviles/Moviles - iPhone/SAPPI13128GALIBB_m.jpg",
+    }, {"boxId": "AGOTADO", "title": "x", "sellPrice": 1, "in_stock": False}], 10)
+    assert [l.id for l in cex] == ["cex-SAPPI13128GALIBB"]
+    assert cex[0].url == "https://es.webuy.com/product-detail/?id=SAPPI13128GALIBB"
+    assert cex[0].image == "https://es.static.webuy.com/product_images/M%C3%B3viles/Moviles%20-%20iPhone/SAPPI13128GALIBB_m.jpg"

@@ -17,6 +17,10 @@ SEARCH_URLS = {
     "milanuncios": "https://www.milanuncios.com/anuncios/?s={q}",
     "vinted": "https://www.vinted.es/catalog?search_text={q}",
     "ebay": "https://www.ebay.es/sch/i.html?_nkw={q}&LH_ItemCondition=3000",
+    "backmarket": "https://www.backmarket.es/es-es/search?q={q}",
+    "refurbed": "https://www.refurbed.es/search/?query={q}",
+    "amazonrenewed": "https://www.amazon.es/s?k={q}&i=renewed",
+    "cex": "https://es.webuy.com/search?stext={q}",
 }
 CONDITIONS = ["Como nuevo", "En buen estado", "Nuevo con etiquetas", "Usado", "En su caja"]
 CITIES = ["Madrid", "Barcelona", "Valencia", "Sevilla", "Bilbao", "Zaragoza", "Málaga"]

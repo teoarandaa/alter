@@ -22,7 +22,13 @@ const STEPS = [
 const field =
   "w-full rounded-xl border border-transparent bg-paper px-4 text-[17px] text-ink outline-none transition duration-300 placeholder:text-ink-3 focus:border-alter-500 focus:bg-white focus:ring-4 focus:ring-alter-500/15";
 
-export default function SearchPanel({ emptyIllustration = null }: { emptyIllustration?: string | null }) {
+export default function SearchPanel({
+  emptyIllustration = null,
+  logos = [],
+}: {
+  emptyIllustration?: string | null;
+  logos?: string[];
+}) {
   const [mode, setMode] = useState<Mode>("url");
   const [url, setUrl] = useState("");
   const [notes, setNotes] = useState("");
@@ -276,7 +282,7 @@ export default function SearchPanel({ emptyIllustration = null }: { emptyIllustr
       </form>
 
       <div ref={resultsRef} className="scroll-mt-16">
-        {result && <Results key={searchCount} data={result} image={resultImage} emptyIllustration={emptyIllustration} />}
+        {result && <Results key={searchCount} data={result} image={resultImage} emptyIllustration={emptyIllustration} logos={logos} />}
       </div>
     </div>
   );
