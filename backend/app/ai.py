@@ -22,8 +22,9 @@ from .schemas import Listing, ProductProfile
 log = logging.getLogger("alter.ai")
 
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
-# Modelos que aceptan el respaldo en el servidor si rechazan una petición (Haiku no lo admite).
-FALLBACK_MODELS = {"claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5", "claude-fable-5-2", "claude-fable-5-1"}
+# Modelos a los que se activa el respaldo en el servidor si rechazan una petición.
+# Solo Sonnet: Opus y Fable quedan fuera por caros, y Haiku no admite el respaldo.
+FALLBACK_MODELS = {"claude-sonnet-5-5"}
 
 ANALYZE_SYSTEM = """Eres el analista de producto de Alter, una web que ayuda a la gente a comprar \
 de segunda mano en lugar de nuevo. Recibes la información de un producto nuevo (página de venta, \
