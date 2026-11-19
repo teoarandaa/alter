@@ -102,6 +102,7 @@ guardan en `frontend/public/illustrations/`.
 
 | Archivo | Ilustración en unDraw | Dónde aparece |
 | --- | --- | --- |
+| `hero.svg` | Shopping Bags | Portada, a la derecha del titular |
 | `paso-1-enlace.svg` | Online shopping | Cómo funciona · paso 1 |
 | `paso-2-busqueda.svg` | Searching Everywhere | Cómo funciona · paso 2 |
 | `paso-3-ahorro.svg` | Price Drop Alert | Cómo funciona · paso 3 |

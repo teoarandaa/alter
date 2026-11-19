@@ -55,7 +55,7 @@ export default function Home() {
       <Nav />
 
       <main>
-        <Hero />
+        <Hero image={illustration("hero.svg")} />
 
         {/* Buscador */}
         <section id="buscar" className="bg-paper px-4 py-20 sm:px-6 sm:py-28">
