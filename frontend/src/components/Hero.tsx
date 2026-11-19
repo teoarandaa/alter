@@ -26,13 +26,10 @@ export default function Hero() {
         style={{ scale, opacity, y }}
         className="mx-auto flex min-h-[78svh] max-w-[1024px] flex-col items-center justify-center px-4 py-24 text-center sm:px-6"
       >
-        <motion.p {...appear(0)} className="text-[19px] font-semibold text-alter-500 sm:text-[21px]">
-          Alter
-        </motion.p>
-        <motion.h1 {...appear(0.1)} className="headline mt-2 text-[44px] sm:text-[72px] lg:text-[88px]">
+        <motion.h1 {...appear(0)} className="headline text-[44px] sm:text-[72px] lg:text-[88px]">
           Segunda mano.
           <br />
-          <span className="text-gradient">Primera opción.</span>
+          <span className="text-alter-500">Primera opción.</span>
         </motion.h1>
         <motion.p {...appear(0.25)} className="mt-6 max-w-[640px] text-[19px] leading-snug text-ink-2 sm:text-[24px]">
           Pega el enlace de lo que ibas a comprar nuevo o sube una foto. Alter lo encuentra de segunda mano y te dice

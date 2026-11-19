@@ -11,7 +11,15 @@ import Segmented from "./Segmented";
 type Filter = "all" | "exact" | "similar";
 type Sort = "recommended" | "cheapest" | "savings";
 
-export default function Results({ data, image }: { data: SearchResponse; image: string | null }) {
+export default function Results({
+  data,
+  image,
+  emptyIllustration = null,
+}: {
+  data: SearchResponse;
+  image: string | null;
+  emptyIllustration?: string | null;
+}) {
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<Sort>("recommended");
   const [manualPrice, setManualPrice] = useState("");
@@ -102,7 +110,7 @@ export default function Results({ data, image }: { data: SearchResponse; image: 
         {stats.map((s) => (
           <div key={s.label} className="px-2 text-center sm:px-6">
             <dt className="sr-only">{s.label}</dt>
-            <dd className={`headline text-[28px] sm:text-[48px] ${s.accent ? "text-gradient" : "text-ink"}`}>{s.value}</dd>
+            <dd className={`headline text-[28px] sm:text-[48px] ${s.accent ? "text-alter-500" : "text-ink"}`}>{s.value}</dd>
             <dd className="mt-1 text-xs text-ink-2 sm:text-[15px]">{s.label}</dd>
           </div>
         ))}
@@ -162,9 +170,15 @@ export default function Results({ data, image }: { data: SearchResponse; image: 
           ))}
         </ul>
       ) : (
-        <p className="mt-16 text-center text-[17px] text-ink-2">
-          No hay anuncios que encajen. Prueba en las webs de abajo o con otra descripción.
-        </p>
+        <div className="mt-16 text-center">
+          {emptyIllustration && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={emptyIllustration} alt="" className="mx-auto mb-8 h-40 w-auto" />
+          )}
+          <p className="text-[17px] text-ink-2">
+            No hay anuncios que encajen. Prueba en las webs de abajo o con otra descripción.
+          </p>
+        </div>
       )}
 
       {/* Plataformas sin API */}

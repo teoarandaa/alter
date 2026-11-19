@@ -90,3 +90,24 @@ Abre http://localhost:3000.
   `uvicorn app.main:app --host 0.0.0.0 --port 8000`. Pon la URL del frontend en `ALTER_ALLOWED_ORIGINS`.
 - Frontend: Vercel o la misma instancia (`npm run build && npm start`). Configura `NEXT_PUBLIC_API_URL` y
   `NEXT_PUBLIC_SITE_URL`.
+
+## Ilustraciones
+
+Las ilustraciones son de [unDraw](https://undraw.co): gratis, para uso comercial y sin atribución. Su licencia
+**no permite descargarlas de forma automática ni enlazarlas desde su web**, así que se descargan a mano y se
+guardan en `frontend/public/illustrations/`.
+
+1. En unDraw, elige el color **#6C3CE1** (selector de color de arriba).
+2. Busca cada ilustración, descárgala en **SVG** y guárdala con este nombre:
+
+| Archivo | Ilustración en unDraw | Dónde aparece |
+| --- | --- | --- |
+| `paso-1-enlace.svg` | Online shopping | Cómo funciona · paso 1 |
+| `paso-2-busqueda.svg` | Searching Everywhere | Cómo funciona · paso 2 |
+| `paso-3-ahorro.svg` | Price Drop Alert | Cómo funciona · paso 3 |
+| `impacto.svg` | Eco conscious | Sección de impacto |
+| `sin-resultados.svg` | Empty cart | Búsqueda sin resultados |
+| `final.svg` | Window shopping | Llamada final |
+
+Las que falten no se muestran (los pasos usan un icono), así que se pueden añadir poco a poco. La lista está
+también en `frontend/src/lib/illustrations.ts`.

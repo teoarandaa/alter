@@ -20,7 +20,7 @@ export default function Footer() {
           <div>
             <Logo />
             <p className="mt-3 max-w-[280px] leading-relaxed text-ink-3">
-              Alternativas de segunda mano que ayudan al planeta. Gratis.
+              Alternativas de segunda mano que ayudan al planeta.
             </p>
           </div>
 

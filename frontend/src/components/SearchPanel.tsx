@@ -21,7 +21,7 @@ const STEPS = [
 const field =
   "w-full rounded-xl border border-transparent bg-paper px-4 text-[17px] text-ink outline-none transition duration-300 placeholder:text-ink-3 focus:border-alter-500 focus:bg-white focus:ring-4 focus:ring-alter-500/15";
 
-export default function SearchPanel() {
+export default function SearchPanel({ emptyIllustration = null }: { emptyIllustration?: string | null }) {
   const [mode, setMode] = useState<Mode>("url");
   const [url, setUrl] = useState("");
   const [notes, setNotes] = useState("");
@@ -185,7 +185,7 @@ export default function SearchPanel() {
                     const f = e.dataTransfer.files?.[0];
                     if (f?.type.startsWith("image/")) pickFile(f);
                   }}
-                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl bg-paper px-4 py-10 text-center transition duration-300 hover:bg-[#ececf0]"
+                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl bg-paper px-4 py-10 text-center transition duration-300 hover:bg-[#f2f2f5]"
                 >
                   <ImagePlus className="size-7 text-alter-500" strokeWidth={1.5} />
                   <span className="text-[17px] text-ink">Arrastra una foto o elige una</span>
@@ -260,7 +260,7 @@ export default function SearchPanel() {
       </form>
 
       <div ref={resultsRef} className="scroll-mt-16">
-        {result && <Results key={searchCount} data={result} image={resultImage} />}
+        {result && <Results key={searchCount} data={result} image={resultImage} emptyIllustration={emptyIllustration} />}
       </div>
     </div>
   );

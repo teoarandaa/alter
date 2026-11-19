@@ -19,7 +19,8 @@
   --color-ink-2: #6e6e73;
   --color-ink-3: #86868b;
   --color-line: #d2d2d7;
-  --color-paper: #f5f5f7;
+  /* Más claro que los grises de las ilustraciones de unDraw (#f0f0f0–#f2f2f2) para que se distingan */
+  --color-paper: #fafafc;
 
   /* Violeta de marca (#6C3CE1), solo como acento */
   --color-alter-50: #f5f1fe;
@@ -64,14 +65,6 @@ body {
   font-weight: 600;
   letter-spacing: -0.028em;
   line-height: 1.05;
-}
-
-/* Texto en degradado para la palabra destacada */
-.text-gradient {
-  background: linear-gradient(90deg, #6c3ce1 0%, #9372ea 55%, #b79ff2 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
 }
 
 /* Barra de progreso indeterminada */
