@@ -1,0 +1,65 @@
+{
+  "_comment": "Plataformas de segunda mano. 'priority' ordena los resultados (mayor = antes) y 'max_results' limita cuántos anuncios se muestran. Aquí se aplican los acuerdos de patrocinio: sube 'priority', 'max_results' y marca 'sponsored' para la plataforma que pague por destacar.",
+  "platforms": {
+    "wallapop": {
+      "name": "Wallapop",
+      "type": "apify",
+      "actor": "cptauad~wallapop-scraper",
+      "priority": 50,
+      "max_results": 12,
+      "sponsored": false,
+      "color": "#13C1AC"
+    },
+    "milanuncios": {
+      "name": "Milanuncios",
+      "type": "apify",
+      "actor": "rastriq~milanuncios-scraper",
+      "priority": 40,
+      "max_results": 10,
+      "sponsored": false,
+      "color": "#F15A24"
+    },
+    "vinted": {
+      "name": "Vinted",
+      "type": "apify",
+      "actor": "epicscrapers~vinted-search-scraper",
+      "priority": 40,
+      "max_results": 10,
+      "sponsored": false,
+      "color": "#09B1BA"
+    },
+    "ebay": {
+      "name": "eBay",
+      "type": "apify",
+      "actor": "memo23~ebay-search-scraper-ppe",
+      "priority": 30,
+      "max_results": 10,
+      "sponsored": false,
+      "color": "#E53238"
+    },
+    "cashconverters": {
+      "name": "Cash Converters",
+      "type": "link",
+      "search_url": "https://www.cashconverters.es/es/es/search/?q={query}",
+      "priority": 20,
+      "sponsored": false,
+      "color": "#0B3D91"
+    },
+    "secondbest": {
+      "name": "Secondbest",
+      "type": "link",
+      "search_url": "https://secondbest.es/search?q={query}",
+      "priority": 20,
+      "sponsored": false,
+      "color": "#222222"
+    },
+    "todocoleccion": {
+      "name": "Todocolección",
+      "type": "link",
+      "search_url": "https://www.todocoleccion.net/buscador?bu={query}",
+      "priority": 20,
+      "sponsored": false,
+      "color": "#C8102E"
+    }
+  }
+}
