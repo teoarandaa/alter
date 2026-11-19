@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { ChevronRight, Info, PackageSearch } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { track } from "@/lib/analytics";
 import { formatEur, PLATFORM_COLORS, PLATFORM_NAMES, type Listing, type SearchResponse } from "@/lib/api";
 import { APPLE_EASE } from "./Reveal";
 import Segmented from "./Segmented";
@@ -166,7 +167,7 @@ export default function Results({
       {listings.length > 0 ? (
         <ul className="mt-8 grid gap-x-5 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {listings.map((l, i) => (
-            <ListingCard key={l.id} listing={l} index={i} />
+            <ListingCard key={l.id} listing={l} index={i} sort={sort} />
           ))}
         </ul>
       ) : (
@@ -194,6 +195,7 @@ export default function Results({
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => track("clic_web_externa", { plataforma: link.platform })}
                 className="group inline-flex items-center text-[17px] text-alter-500 hover:underline"
               >
                 {link.name}
@@ -214,7 +216,7 @@ export default function Results({
   );
 }
 
-function ListingCard({ listing: l, index }: { listing: Listing; index: number }) {
+function ListingCard({ listing: l, index, sort }: { listing: Listing; index: number; sort: Sort }) {
   const color = PLATFORM_COLORS[l.platform] ?? "#6C3CE1";
   // Si la foto no carga (enlace caducado, bloqueo de la web…), se muestra el icono en lugar de una imagen rota.
   const [imageFailed, setImageFailed] = useState(false);
@@ -228,6 +230,17 @@ function ListingCard({ listing: l, index }: { listing: Listing; index: number })
         href={l.url}
         target="_blank"
         rel={`noopener noreferrer${l.sponsored ? " sponsored" : ""}`}
+        onClick={() =>
+          track("clic_anuncio", {
+            plataforma: l.platform,
+            posicion: index + 1,
+            orden: sort,
+            precio: l.price_eur,
+            ahorro_pct: l.savings_pct != null ? Math.round(l.savings_pct) : undefined,
+            tipo: l.match_type === "exact" ? "igual" : "similar",
+            patrocinado: l.sponsored,
+          })
+        }
         className="group block"
       >
         <div className="relative aspect-[4/3] overflow-hidden rounded-[22px] bg-white">

@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ImagePlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { shopDomain, track } from "@/lib/analytics";
 import { searchByImage, searchByUrl, type SearchResponse } from "@/lib/api";
 import { APPLE_EASE } from "./Reveal";
 import Results from "./Results";
@@ -79,9 +80,24 @@ export default function SearchPanel({ emptyIllustration = null }: { emptyIllustr
           : await searchByImage(file!, description.trim(), Number(newPrice.replace(",", ".")) || undefined, controller.signal);
       setResult(data);
       setSearchCount((n) => n + 1);
+      track("busqueda", {
+        modo: mode === "url" ? "enlace" : "foto",
+        tienda: mode === "url" ? shopDomain(url.trim()) : undefined,
+        producto: data.product.name,
+        marca: data.product.brand,
+        categoria: data.product.category,
+        resultados: data.listings.length,
+        iguales: data.listings.filter((l) => l.match_type === "exact").length,
+        mejor_ahorro: data.best_savings_pct != null ? Math.round(data.best_savings_pct) : undefined,
+        precio_nuevo_conocido: data.product.new_price_eur != null,
+        con_ia: data.ai_enabled,
+      });
       setResultImage(mode === "image" ? preview : data.source_image);
     } catch (err) {
-      if ((err as Error).name !== "AbortError") setError((err as Error).message);
+      if ((err as Error).name !== "AbortError") {
+        setError((err as Error).message);
+        track("busqueda_error", { modo: mode === "url" ? "enlace" : "foto" });
+      }
     } finally {
       if (abortRef.current === controller) setLoading(false);
     }

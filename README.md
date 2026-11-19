@@ -118,3 +118,27 @@ Si una ilustración se descarga con el violeta por defecto de unDraw (`#6C63FF`)
 ```bash
 sed -i 's/#6[cC]63[fF][fF]/#6C3CE1/g' frontend/public/illustrations/*.svg
 ```
+
+## Estadísticas (Umami)
+
+La web está preparada para [Umami](https://umami.is): analítica **sin cookies y sin datos personales**, así que
+no necesita banner de consentimiento. Mientras no se configure, no se carga ningún script ni se mide nada.
+
+**Al publicar la web:**
+
+1. Crea una cuenta gratuita en Umami Cloud y añade la web con su dominio.
+2. Copia el *Website ID* en `NEXT_PUBLIC_UMAMI_WEBSITE_ID` (en `frontend/.env.local` o en las variables de
+   entorno del hosting) y el dominio en `NEXT_PUBLIC_UMAMI_DOMAINS`.
+3. Vuelve a compilar el frontend (`npm run build`): las variables `NEXT_PUBLIC_*` se fijan al compilar.
+
+Además de las visitas, se envían estos eventos (se ven en *Events* dentro de Umami):
+
+| Evento | Cuándo | Datos |
+| --- | --- | --- |
+| `busqueda` | Una búsqueda termina bien | modo (enlace/foto), tienda (solo el dominio), producto, marca, categoría, resultados, iguales, mejor ahorro, si se conocía el precio nuevo, si se usó IA |
+| `busqueda_error` | Una búsqueda falla | modo |
+| `clic_anuncio` | Se abre un anuncio | plataforma, posición, orden, precio, % de ahorro, igual/similar, patrocinado |
+| `clic_web_externa` | Se abre Cash Converters, Secondbest o Todocolección | plataforma |
+
+Nunca se envían enlaces completos, textos escritos por el usuario ni fotos. Se respeta la opción «No rastrear»
+del navegador. Cuando la web sea pública, conviene mencionarlo en una página de política de privacidad.

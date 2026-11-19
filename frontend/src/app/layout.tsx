@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 
 import MotionProvider from "@/components/MotionProvider";
+import { UMAMI_DOMAINS, UMAMI_SCRIPT_URL, UMAMI_WEBSITE_ID } from "@/lib/analytics";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -45,6 +47,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="es" className={`${inter.variable} h-full`}>
       <body className="flex min-h-full flex-col font-sans">
         <MotionProvider>{children}</MotionProvider>
+        {/* Umami: solo se carga si hay ID configurado; respeta «No rastrear» del navegador */}
+        {UMAMI_WEBSITE_ID && (
+          <Script
+            src={UMAMI_SCRIPT_URL}
+            data-website-id={UMAMI_WEBSITE_ID}
+            data-do-not-track="true"
+            {...(UMAMI_DOMAINS ? { "data-domains": UMAMI_DOMAINS } : {})}
+            strategy="afterInteractive"
+          />
+        )}
       </body>
     </html>
   );
