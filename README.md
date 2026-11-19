@@ -32,7 +32,25 @@ indicar cuándo un resultado aparece destacado por pago.
 
 ## Puesta en marcha
 
-### Backend
+### Todo de una vez
+
+```bash
+./run.sh
+```
+
+Necesita Python 3.10+ y Node.js. La primera vez crea el entorno virtual, instala las dependencias y copia los
+`.env` de ejemplo; después arranca backend y frontend juntos (Ctrl+C para los dos). En Windows, ejecútalo desde
+Git Bash.
+
+| Opción | Qué hace |
+| --- | --- |
+| `./run.sh --prod` | Compila el frontend y lo sirve en modo producción |
+| `./run.sh --install` | Reinstala las dependencias antes de arrancar |
+| `BACKEND_PORT=8001 FRONTEND_PORT=3001 ./run.sh` | Usa otros puertos |
+
+### Por separado
+
+#### Backend
 
 ```bash
 cd backend
@@ -48,7 +66,7 @@ Sin `ANTHROPIC_API_KEY` el análisis usa heurísticas simples. Con ambas claves,
 
 Tests: `python -m pytest`
 
-### Frontend
+#### Frontend
 
 ```bash
 cd frontend
