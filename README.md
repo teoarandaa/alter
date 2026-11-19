@@ -102,7 +102,7 @@ guardan en `frontend/public/illustrations/`.
 
 | Archivo | Ilustración en unDraw | Dónde aparece |
 | --- | --- | --- |
-| `hero.svg` | Shopping Bags | Portada, a la derecha del titular |
+| `hero.svg` | Happy Customer | Portada, a la derecha del titular |
 | `paso-1-enlace.svg` | Online shopping | Cómo funciona · paso 1 |
 | `paso-2-busqueda.svg` | Searching Everywhere | Cómo funciona · paso 2 |
 | `paso-3-ahorro.svg` | Price Drop Alert | Cómo funciona · paso 3 |
@@ -112,3 +112,9 @@ guardan en `frontend/public/illustrations/`.
 
 Las que falten no se muestran (los pasos usan un icono), así que se pueden añadir poco a poco. La lista está
 también en `frontend/src/lib/illustrations.ts`.
+
+Si una ilustración se descarga con el violeta por defecto de unDraw (`#6C63FF`), se pasa al de Alter con:
+
+```bash
+sed -i 's/#6[cC]63[fF][fF]/#6C3CE1/g' frontend/public/illustrations/*.svg
+```

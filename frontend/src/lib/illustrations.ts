@@ -9,7 +9,7 @@ import path from "node:path";
  * Nombre del archivo → ilustración que hay que descargar de unDraw.
  */
 export const ILLUSTRATIONS = {
-  "hero.svg": "Shopping Bags",
+  "hero.svg": "Happy Customer",
   "paso-1-enlace.svg": "Online shopping",
   "paso-2-busqueda.svg": "Searching Everywhere",
   "paso-3-ahorro.svg": "Price Drop Alert",
