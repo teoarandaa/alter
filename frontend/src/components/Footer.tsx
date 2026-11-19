@@ -1,16 +1,17 @@
 import Link from "next/link";
 
+import { PLATFORMS } from "@/lib/platforms";
+
 import Logo from "./Logo";
 
 // Solo rutas que existen hoy en la web.
 const NAV = [
   { href: "/", label: "Inicio" },
-  { href: "/#buscar", label: "Buscar" },
+  { href: "/buscar", label: "Buscar" },
   { href: "/#como-funciona", label: "Cómo funciona" },
   { href: "/#impacto", label: "Impacto" },
 ];
 
-const PLATFORMS = ["Wallapop", "Milanuncios", "Vinted", "eBay", "Cash Converters", "Secondbest", "Todocolección"];
 
 export default function Footer() {
   return (

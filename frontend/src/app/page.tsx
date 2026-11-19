@@ -1,4 +1,5 @@
 import { Camera, Link2, ScanSearch, Tags } from "lucide-react";
+import Link from "next/link";
 
 import Hero from "@/components/Hero";
 import CountUp from "@/components/CountUp";
@@ -6,10 +7,7 @@ import Footer from "@/components/Footer";
 import Nav from "@/components/Nav";
 import Reveal from "@/components/Reveal";
 import ScrollText from "@/components/ScrollText";
-import SearchPanel from "@/components/SearchPanel";
 import { illustration, type IllustrationName } from "@/lib/illustrations";
-
-const PLATFORMS = ["Wallapop", "Milanuncios", "Vinted", "eBay", "Cash Converters", "Secondbest", "Todocolección"];
 
 const STEPS: {
   icon: typeof Link2;
@@ -57,20 +55,6 @@ export default function Home() {
 
       <main>
         <Hero image={illustration("hero.svg")} />
-
-        {/* Buscador */}
-        <section id="buscar" className="bg-paper px-4 py-20 sm:px-6 sm:py-28">
-          <Reveal className="mx-auto max-w-[680px] text-center">
-            <h2 className="headline text-[36px] sm:text-[56px]">¿Qué ibas a comprar?</h2>
-            <p className="mt-3 text-[19px] text-ink-2 sm:text-[21px]">Lo buscamos de segunda mano por ti.</p>
-          </Reveal>
-          <Reveal delay={0.1} className="mt-12">
-            <SearchPanel emptyIllustration={illustration("sin-resultados.svg")} />
-          </Reveal>
-          <Reveal delay={0.2} className="mx-auto mt-12 max-w-[680px] text-center text-xs leading-relaxed text-ink-3">
-            Buscamos en {PLATFORMS.slice(0, -1).join(", ")} y {PLATFORMS.at(-1)}.
-          </Reveal>
-        </section>
 
         {/* Cómo funciona */}
         <section id="como-funciona" className="bg-white px-4 py-24 sm:px-6 sm:py-32">
@@ -147,12 +131,12 @@ export default function Home() {
           <Reveal className="mx-auto max-w-[680px]">
             <h2 className="headline text-[40px] sm:text-[64px]">Tu próxima compra ya existe.</h2>
             <p className="mt-4 text-[19px] text-ink-2 sm:text-[21px]">Solo hay que encontrarla.</p>
-            <a
-              href="#buscar"
+            <Link
+              href="/buscar"
               className="mt-9 inline-block rounded-full bg-alter-500 px-6 py-3 text-[17px] text-white transition-colors duration-300 hover:bg-alter-600"
             >
               Empezar a buscar
-            </a>
+            </Link>
             {finalImage && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={finalImage} alt="" className="mx-auto mt-16 h-44 w-auto sm:h-56" />

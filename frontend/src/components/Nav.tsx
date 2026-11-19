@@ -3,9 +3,9 @@ import Link from "next/link";
 import Logo from "./Logo";
 
 const LINKS = [
-  { href: "#buscar", label: "Buscar" },
-  { href: "#como-funciona", label: "Cómo funciona" },
-  { href: "#impacto", label: "Impacto" },
+  { href: "/buscar", label: "Buscar" },
+  { href: "/#como-funciona", label: "Cómo funciona" },
+  { href: "/#impacto", label: "Impacto" },
 ];
 
 /** Menú fijo y translúcido: deja ver el contenido difuminado debajo. */
@@ -19,9 +19,9 @@ export default function Nav() {
         <ul className="flex items-center gap-5 text-xs text-ink/80 sm:gap-8">
           {LINKS.map((l) => (
             <li key={l.href}>
-              <a href={l.href} className="transition-colors hover:text-ink">
+              <Link href={l.href} className="transition-colors hover:text-ink">
                 {l.label}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>

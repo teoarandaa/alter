@@ -2,6 +2,7 @@
 
 import { motion, useScroll, useTransform } from "motion/react";
 import { ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { useRef } from "react";
 
 import { APPLE_EASE } from "./Reveal";
@@ -55,12 +56,12 @@ export default function Hero({ image = null }: { image?: string | null }) {
               {...appear(0.4)}
               className={`mt-9 flex flex-col items-center gap-5 sm:flex-row sm:gap-8 ${image ? "sm:justify-center md:justify-start" : ""}`}
             >
-              <a
-                href="#buscar"
+              <Link
+                href="/buscar"
                 className="rounded-full bg-alter-500 px-6 py-3 text-[17px] text-white transition-colors duration-300 hover:bg-alter-600"
               >
                 Buscar alternativas
-              </a>
+              </Link>
               <a href="#como-funciona" className="group inline-flex items-center text-[17px] text-alter-500 hover:underline">
                 Cómo funciona
                 <ChevronRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
