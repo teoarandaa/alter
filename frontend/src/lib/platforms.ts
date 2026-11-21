@@ -108,7 +108,7 @@ export const PLATFORM_SECTIONS: PlatformSection[] = [
       {
         key: "amazonrenewed",
         inline: true,
-        name: "Amazon Reacondicionados",
+        name: "Amazon",
         url: "https://www.amazon.es/s?k=reacondicionado&i=renewed",
         color: "#FF9900",
         description: "Productos reacondicionados y revisados que se venden en Amazon.es.",

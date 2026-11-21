@@ -17,13 +17,13 @@ export default function Results({
   data,
   image,
   emptyIllustration = null,
-  logos = [],
+  logos = {},
 }: {
   data: SearchResponse;
   image: string | null;
   emptyIllustration?: string | null;
-  /** Claves de las webs con logo en public/logos/. */
-  logos?: string[];
+  /** Logo de cada web (clave → URL en public/logos/). */
+  logos?: Record<string, string>;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<Sort>("recommended");
@@ -171,7 +171,7 @@ export default function Results({
       {listings.length > 0 ? (
         <ul className="mt-8 grid gap-x-5 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {listings.map((l, i) => (
-            <ListingCard key={l.id} listing={l} index={i} sort={sort} hasLogoFile={logos.includes(l.platform)} />
+            <ListingCard key={l.id} listing={l} index={i} sort={sort} logo={logos[l.platform] ?? null} />
           ))}
         </ul>
       ) : (
@@ -224,12 +224,12 @@ function ListingCard({
   listing: l,
   index,
   sort,
-  hasLogoFile,
+  logo,
 }: {
   listing: Listing;
   index: number;
   sort: Sort;
-  hasLogoFile: boolean;
+  logo: string | null;
 }) {
   const color = PLATFORM_COLORS[l.platform] ?? "#6C3CE1";
   // Si la foto no carga (enlace caducado, bloqueo de la web…), se muestra el icono en lugar de una imagen rota.
@@ -286,7 +286,7 @@ function ListingCard({
               platformKey={l.platform}
               name={PLATFORM_NAMES[l.platform] ?? l.platform}
               color={color}
-              hasLogoFile={hasLogoFile}
+              logo={logo}
               size="sm"
             />
             {l.sponsored && <span className="text-ink-3">· Patrocinado</span>}

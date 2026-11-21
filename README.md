@@ -163,3 +163,20 @@ Además de las visitas, se envían estos eventos (se ven en *Events* dentro de U
 
 Nunca se envían enlaces completos, textos escritos por el usuario ni fotos. Se respeta la opción «No rastrear»
 del navegador. Cuando la web sea pública, conviene mencionarlo en una página de política de privacidad.
+
+## Logos de las plataformas
+
+Cada web tiene su logo en `frontend/public/logos/<clave>.svg` (o `.png`/`.webp` si la marca no publica SVG). Se
+muestran en `/plataformas` y en las tarjetas de resultados; si falta el archivo, se usa un punto de color y el nombre.
+
+| Archivo | Origen |
+| --- | --- |
+| `wallapop.svg`, `backmarket.svg`, `cex.svg`, `rebuy.svg`, `vinted.svg`, `vestiaire.svg`, `todocoleccion.svg` | SVG oficial de la cabecera de su web |
+| `milanuncios.svg`, `ebay.svg`, `refurbed.svg`, `reverb.svg` | SVG incrustado en su web, con los colores fijados |
+| `percentil.svg` | SVG de su web, pasado a su verde de marca (`#022F11`) porque el original es claro, para fondo oscuro |
+| `cashconverters.svg` | Logotipo de Cash Converters (web de Australia/Reino Unido) en el magenta de la web española |
+| `amazonrenewed.svg`, `etsyvintage.svg` | Wikimedia Commons (dominio público) |
+| `secondbest.webp`, `iberlibro.png` | Imagen oficial de su web: estas marcas no publican el logo en SVG |
+
+Los logos son marcas registradas de sus dueños y se usan solo para identificar cada web. Si se cierra un acuerdo
+con alguna plataforma, conviene pedirle su kit de marca y sustituir el archivo.

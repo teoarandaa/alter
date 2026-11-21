@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default function PlataformasPage() {
-  const logos = new Set(availableLogos(PLATFORM_SECTIONS.flatMap((s) => s.platforms.map((p) => p.key))));
+  const logos = availableLogos(PLATFORM_SECTIONS.flatMap((s) => s.platforms.map((p) => p.key)));
 
   return (
     <>
@@ -70,7 +70,7 @@ export default function PlataformasPage() {
                     className={`flex flex-col rounded-[28px] p-7 sm:p-8 ${si % 2 === 0 ? "bg-white" : "bg-paper"}`}
                   >
                     <h3 className="flex h-8 items-center text-[21px] font-semibold tracking-[-0.02em] text-ink">
-                      <PlatformMark platformKey={p.key} name={p.name} color={p.color} hasLogoFile={logos.has(p.key)} />
+                      <PlatformMark platformKey={p.key} name={p.name} color={p.color} logo={logos[p.key]} />
                     </h3>
                     <p className={`mt-2 text-xs font-medium ${p.inline ? "text-alter-600" : "text-ink-3"}`}>
                       {p.inline ? "Anuncios en Alter, con precio y ahorro" : "Te enlazamos su búsqueda"}

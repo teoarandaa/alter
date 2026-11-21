@@ -75,8 +75,10 @@ port_in_use() {
 
 # --- Dependencias ----------------------------------------------------------
 setup_backend() {
-  if [ ! -x "$VENV_PY" ]; then
+  # Un venv a medio crear (p. ej. interrumpido) tiene python.exe pero no pyvenv.cfg.
+  if [ ! -x "$VENV_PY" ] || [ ! -f "$BACKEND/.venv/pyvenv.cfg" ]; then
     info "Creando entorno virtual de Python…"
+    rm -rf "$BACKEND/.venv"
     "$PYTHON" -m venv "$BACKEND/.venv"
     FORCE_INSTALL=1
   fi

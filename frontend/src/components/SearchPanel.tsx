@@ -24,10 +24,10 @@ const field =
 
 export default function SearchPanel({
   emptyIllustration = null,
-  logos = [],
+  logos = {},
 }: {
   emptyIllustration?: string | null;
-  logos?: string[];
+  logos?: Record<string, string>;
 }) {
   const [mode, setMode] = useState<Mode>("url");
   const [url, setUrl] = useState("");
