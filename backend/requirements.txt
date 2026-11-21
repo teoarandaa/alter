@@ -1,4 +1,4 @@
-anthropic>=2.10,<3
+anthropic>=2.12,<3
 fastapi>=0.162
 uvicorn[standard]>=0.54
 httpx>=0.28,<1

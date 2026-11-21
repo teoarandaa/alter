@@ -37,6 +37,11 @@ class Settings:
     )
     platforms_file: Path = field(default_factory=lambda: BASE_DIR / "platforms.json")
 
+    # Panel privado de gastos (/admin). Sin ALTER_ADMIN_TOKEN el panel está desactivado.
+    admin_token: str | None = field(default_factory=lambda: os.getenv("ALTER_ADMIN_TOKEN") or None)
+    # Clave de administración de Anthropic (sk-ant-admin...), solo para leer el gasto en Claude.
+    anthropic_admin_key: str | None = field(default_factory=lambda: os.getenv("ANTHROPIC_ADMIN_KEY") or None)
+
     @property
     def demo_mode(self) -> bool:
         return self.force_demo or not self.apify_token

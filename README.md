@@ -106,6 +106,27 @@ Abre http://localhost:3000.
 - **Vestiaire Collective, Reverb y Etsy** tienen scraper en Apify, pero devuelven anuncios de EE. UU. en dólares
   (y Etsy tarda más de un minuto), así que de momento solo se enlazan.
 
+## Panel de gastos (`/admin`)
+
+Página privada que junta en un sitio lo que cuesta Alter: gasto en Claude y en Apify del ciclo de facturación,
+gasto por día, gasto por web (qué scraper sale más caro) y **coste por búsqueda**. No guarda nada:
+cada vez que se abre consulta los servicios (con 5 minutos de caché). No aparece en el menú ni en el sitemap y
+pide a los buscadores que no la indexen.
+
+Se configura en el **backend** (`backend/.env` o las variables de entorno del hosting):
+
+| Variable | Para qué | Dónde se consigue |
+| --- | --- | --- |
+| `ALTER_ADMIN_TOKEN` | Contraseña del panel. Sin ella, el panel no existe | Inventa una larga y aleatoria |
+| `ANTHROPIC_ADMIN_KEY` | Gasto en Claude (llega con 4-24 h de retraso) | Claude Console → Settings → Admin keys (`sk-ant-admin…`). No es la `ANTHROPIC_API_KEY` |
+
+Apify usa el `APIFY_TOKEN` de siempre. Cada bloque funciona por separado: si falta una clave, ese bloque dice
+qué falta y el resto se muestra igual. Las búsquedas se estiman con las ejecuciones de los scrapers generalistas
+(Wallapop, Milanuncios…), que se consultan en todas; las cifras exactas de uso están en Umami.
+
+El panel **solo informa**: para no llevarte sustos, pon también un límite de gasto mensual en Claude Console
+(Settings → Limits) y en Apify (Settings → Usage & billing).
+
 ## Despliegue
 
 - Backend: cualquier instancia barata (Hetzner, Railway, Fly.io…) con

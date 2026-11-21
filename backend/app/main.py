@@ -5,14 +5,16 @@ Arranque en local:  uvicorn app.main:app --reload --port 8000
 
 from __future__ import annotations
 
+import asyncio
+import hmac
 import logging
 
 import anthropic
 import httpx
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import ai
+from . import admin, ai
 from .config import settings
 from .product_page import UnsafeUrlError, assert_safe_url, fetch_product_page
 from .schemas import SearchByTextRequest, SearchByUrlRequest, SearchResponse
@@ -36,6 +38,18 @@ app.add_middleware(
 @app.get("/api/health")
 async def health() -> dict:
     return {"status": "ok", "ai_enabled": settings.ai_enabled, "demo_mode": settings.demo_mode}
+
+
+@app.get("/api/admin/stats", include_in_schema=False)
+async def admin_stats(refresh: bool = False, authorization: str | None = Header(default=None)) -> dict:
+    """Panel privado de gastos. Sin ALTER_ADMIN_TOKEN configurado, no existe."""
+    if not settings.admin_token:
+        raise HTTPException(404, "Not Found")
+    token = (authorization or "").removeprefix("Bearer ").strip()
+    if not hmac.compare_digest(token.encode(), settings.admin_token.encode()):
+        await asyncio.sleep(1)  # frena los intentos de adivinar la contraseña
+        raise HTTPException(401, "Contraseña incorrecta.")
+    return await admin.get_stats(refresh=refresh)
 
 
 def _log_ai_failure(exc: Exception, what: str) -> None:

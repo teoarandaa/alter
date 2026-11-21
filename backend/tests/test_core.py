@@ -344,3 +344,30 @@ def test_text_search_endpoint(monkeypatch):
     monkeypatch.setattr(ai, "_score_with_claude", boom)
     res = client.post("/api/search/text", json={"description": "Sofá de tres plazas gris"})
     assert res.status_code == 200 and res.json()["ai_enabled"] is False
+
+
+def test_admin_stats_requires_token(monkeypatch):
+    """El panel de gastos no existe sin ALTER_ADMIN_TOKEN y exige la contraseña correcta."""
+    import dataclasses
+
+    from fastapi.testclient import TestClient
+
+    from app import admin, config, main
+
+    client = TestClient(main.app)
+    monkeypatch.setattr(main, "settings", dataclasses.replace(config.settings, admin_token=None))
+    assert client.get("/api/admin/stats").status_code == 404
+
+    async def fake_stats(refresh=False):
+        return {"totals": {"usd": 1.5}}
+
+    async def no_sleep(_):
+        return None
+
+    monkeypatch.setattr(main, "settings", dataclasses.replace(config.settings, admin_token="secreto"))
+    monkeypatch.setattr(admin, "get_stats", fake_stats)
+    monkeypatch.setattr(main.asyncio, "sleep", no_sleep)
+    assert client.get("/api/admin/stats").status_code == 401
+    assert client.get("/api/admin/stats", headers={"Authorization": "Bearer otro"}).status_code == 401
+    res = client.get("/api/admin/stats", headers={"Authorization": "Bearer secreto"})
+    assert res.status_code == 200 and res.json()["totals"]["usd"] == 1.5
