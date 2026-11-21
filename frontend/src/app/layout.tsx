@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: "%s · Alter",
   },
   description:
-    "Pega el enlace de lo que ibas a comprar nuevo o sube una foto: Alter busca ese objeto de segunda mano en Wallapop, Vinted, Milanuncios, eBay y más, y te dice cuánto te ahorras. Gratis.",
+    "Pega el enlace de lo que ibas a comprar nuevo, sube una foto o descríbelo: Alter busca ese objeto de segunda mano en Wallapop, Vinted, Milanuncios, eBay y más, y te dice cuánto te ahorras. Gratis.",
   keywords: [
     "segunda mano",
     "comparador segunda mano",

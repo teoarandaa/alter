@@ -23,8 +23,8 @@ const STEPS: {
     image: "paso-1-enlace.svg",
     title: "Pega un enlace.",
     alt: Camera,
-    altTitle: "O sube una foto.",
-    text: "El enlace de la tienda donde ibas a comprarlo nuevo. O una foto, con marca, materiales o medidas si los sabes.",
+    altTitle: "O una foto. O descríbelo.",
+    text: "El enlace de la tienda donde ibas a comprarlo nuevo, una foto o unas pocas palabras: «sillón de piel marrón», «iPhone 13 128 GB»…",
   },
   {
     icon: ScanSearch,
@@ -43,7 +43,7 @@ const STEPS: {
 const FIGURES = [
   { eyebrow: "Plataformas", value: PLATFORMS.length, unit: "webs", label: "de segunda mano en una sola búsqueda." },
   { eyebrow: "Precio", value: 0, unit: "€", label: "Usar Alter es gratis." },
-  { eyebrow: "Lo que necesitas", value: 1, unit: "enlace", label: "o una foto del objeto. Nada más." },
+  { eyebrow: "Lo que necesitas", value: 1, unit: "enlace", label: "o una foto, o unas palabras. Nada más." },
 ];
 
 export default function Home() {

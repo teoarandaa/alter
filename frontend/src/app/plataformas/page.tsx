@@ -106,7 +106,7 @@ export default function PlataformasPage() {
         <section className="bg-white px-4 py-20 text-center sm:px-6 sm:py-28">
           <Reveal className="mx-auto max-w-[680px]">
             <h2 className="headline text-[32px] sm:text-[48px]">No tienes que mirarlas una a una.</h2>
-            <p className="mt-3 text-[19px] text-ink-2">Pega un enlace o sube una foto y buscamos por ti.</p>
+            <p className="mt-3 text-[19px] text-ink-2">Pega un enlace, sube una foto o descríbelo, y buscamos por ti.</p>
             <Link
               href="/buscar"
               className="mt-8 inline-block rounded-full bg-alter-500 px-6 py-3 text-[17px] text-white transition-colors duration-300 hover:bg-alter-600"

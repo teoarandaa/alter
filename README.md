@@ -1,7 +1,7 @@
 # Alter — Alternativas que ayudan al planeta
 
-Alter busca de segunda mano lo que ibas a comprar nuevo. Pegas el enlace de la tienda (o subes una foto
-con una descripción), la IA entiende qué es el objeto y lo busca en las principales webs de segunda mano.
+Alter busca de segunda mano lo que ibas a comprar nuevo. Pegas el enlace de la tienda, subes una foto o
+simplemente lo describes; la IA entiende qué es el objeto y lo busca en las principales webs de segunda mano.
 Recibes enlaces directos a los anuncios, el precio de cada uno y el % de ahorro frente al precio nuevo.
 
 ## Estructura
@@ -13,7 +13,8 @@ frontend/   Web en Next.js 16 + TypeScript + Tailwind + Motion
 
 ### Cómo funciona una búsqueda
 
-1. **Entrada**: enlace de la tienda (`POST /api/search/url`) o foto + descripción (`POST /api/search/image`).
+1. **Entrada**: enlace de la tienda (`POST /api/search/url`), foto + descripción (`POST /api/search/image`) o solo
+   una descripción escrita (`POST /api/search/text`).
 2. **Análisis** (`backend/app/ai.py`): Claude lee la página del producto (título, precio, JSON-LD, imagen) o la foto
    y devuelve una ficha estructurada: nombre, marca, modelo, materiales, precio nuevo y 2-4 búsquedas.
 3. **Búsqueda** (`backend/app/platforms.py`): se lanzan los scrapers de Apify que encajan con el producto:
@@ -156,7 +157,7 @@ Además de las visitas, se envían estos eventos (se ven en *Events* dentro de U
 
 | Evento | Cuándo | Datos |
 | --- | --- | --- |
-| `busqueda` | Una búsqueda termina bien | modo (enlace/foto), tienda (solo el dominio), producto, marca, categoría, resultados, iguales, mejor ahorro, si se conocía el precio nuevo, si se usó IA |
+| `busqueda` | Una búsqueda termina bien | modo (enlace/foto/texto), tienda (solo el dominio), producto, marca, categoría, resultados, iguales, mejor ahorro, si se conocía el precio nuevo, si se usó IA |
 | `busqueda_error` | Una búsqueda falla | modo |
 | `clic_anuncio` | Se abre un anuncio | plataforma, posición, orden, precio, % de ahorro, igual/similar, patrocinado |
 | `clic_web_externa` | Se abre Cash Converters, Secondbest o Todocolección | plataforma |

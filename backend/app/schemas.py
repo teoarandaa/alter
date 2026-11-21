@@ -41,6 +41,13 @@ class SearchByUrlRequest(BaseModel):
     notes: str | None = Field(default=None, max_length=1000)
 
 
+class SearchByTextRequest(BaseModel):
+    """Búsqueda describiendo el objeto con palabras, sin enlace ni foto."""
+
+    description: str = Field(min_length=3, max_length=1000)
+    new_price_eur: float | None = Field(default=None, gt=0)
+
+
 class Listing(BaseModel):
     """Un anuncio de segunda mano normalizado, venga de la plataforma que venga."""
 

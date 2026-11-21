@@ -309,3 +309,38 @@ def test_normalize_new_electronics_scrapers():
     assert [l.id for l in cex] == ["cex-SAPPI13128GALIBB"]
     assert cex[0].url == "https://es.webuy.com/product-detail/?id=SAPPI13128GALIBB"
     assert cex[0].image == "https://es.static.webuy.com/product_images/M%C3%B3viles/Moviles%20-%20iPhone/SAPPI13128GALIBB_m.jpg"
+
+
+def test_text_search_endpoint(monkeypatch):
+    """Búsqueda por descripción: sin claves (modo demo y heurística) y con fallo de Claude."""
+    from fastapi.testclient import TestClient
+
+    from app import config, main, search
+
+    no_keys = config.Settings(anthropic_api_key=None, apify_token=None)
+    for module in (config, ai, search, main):
+        monkeypatch.setattr(module, "settings", no_keys, raising=False)
+    client = TestClient(main.app)
+
+    res = client.post("/api/search/text", json={"description": "Bicicleta de montaña Orbea talla M", "new_price_eur": 450})
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert body["product"]["category_group"] == "deporte"
+    assert body["product"]["search_queries"][0].lower().startswith("bicicleta")
+    assert body["product"]["new_price_eur"] == 450
+    assert body["listings"]
+
+    assert client.post("/api/search/text", json={"description": "  "}).status_code in (400, 422)
+    assert client.post("/api/search/text", json={"description": "x" * 1001}).status_code == 422
+
+    keys = config.Settings(anthropic_api_key="sk-ant-test", apify_token=None)
+    for module in (config, ai, search, main):
+        monkeypatch.setattr(module, "settings", keys, raising=False)
+
+    async def boom(*args, **kwargs):
+        raise RuntimeError("sin crédito")
+
+    monkeypatch.setattr(ai, "analyze_text", boom)
+    monkeypatch.setattr(ai, "_score_with_claude", boom)
+    res = client.post("/api/search/text", json={"description": "Sofá de tres plazas gris"})
+    assert res.status_code == 200 and res.json()["ai_enabled"] is False

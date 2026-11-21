@@ -12,7 +12,7 @@ import { PLATFORM_SECTIONS, PLATFORMS } from "@/lib/platforms";
 export const metadata: Metadata = {
   title: "Buscar alternativas",
   description:
-    "Pega el enlace de lo que ibas a comprar nuevo o sube una foto y encuentra alternativas de segunda mano en Wallapop, Vinted, Milanuncios, eBay y más.",
+    "Pega el enlace de lo que ibas a comprar nuevo, sube una foto o descríbelo y encuentra alternativas de segunda mano en Wallapop, Vinted, Milanuncios, eBay y más.",
   alternates: { canonical: "/buscar" },
 };
 

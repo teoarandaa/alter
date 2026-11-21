@@ -84,6 +84,19 @@ export async function searchByUrl(url: string, notes?: string, signal?: AbortSig
   return handle(res);
 }
 
+export async function searchByText(description: string, newPrice?: number, signal?: AbortSignal): Promise<SearchResponse> {
+  const res = await fetch(`${API_URL}/api/search/text`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ description, new_price_eur: newPrice && newPrice > 0 ? newPrice : null }),
+    signal,
+  }).catch((e) => {
+    if (e?.name === "AbortError") throw e;
+    throw networkError();
+  });
+  return handle(res);
+}
+
 export async function searchByImage(
   image: File,
   description: string,

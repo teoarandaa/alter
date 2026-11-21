@@ -49,7 +49,7 @@ export default function Hero({ image = null }: { image?: string | null }) {
               {...appear(0.25)}
               className={`mt-6 text-[19px] leading-snug text-ink-2 ${image ? "mx-auto max-w-[520px] sm:text-[21px] md:mx-0" : "max-w-[640px] sm:text-[24px]"}`}
             >
-              Pega el enlace de lo que ibas a comprar nuevo o sube una foto. Alter lo encuentra de segunda mano y te dice
+              Pega el enlace de lo que ibas a comprar nuevo, sube una foto o simplemente descríbelo. Alter lo encuentra de segunda mano y te dice
               cuánto ahorras.
             </motion.p>
             <motion.div

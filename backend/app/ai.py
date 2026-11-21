@@ -140,6 +140,25 @@ async def analyze_image(image: bytes, media_type: str, description: str, new_pri
     return profile
 
 
+async def analyze_text(description: str, new_price_eur: float | None) -> ProductProfile:
+    """Ficha del producto a partir solo de lo que escribe el usuario."""
+    if not settings.ai_enabled:
+        return heuristic_profile(description, None, new_price_eur)
+
+    text = (
+        "El usuario no tiene enlace ni foto: describe con sus palabras lo que quiere encontrar de segunda mano.\n"
+        "Si la descripción es genérica (sin marca ni modelo), no los inventes y crea búsquedas por tipo de objeto "
+        "y sus rasgos clave. Un presupuesto («hasta 100 €») no es el precio nuevo.\n\n"
+        f"Descripción del usuario: {description}"
+    )
+    if new_price_eur:
+        text += f"\nPrecio nuevo indicado por el usuario: {new_price_eur} EUR"
+    profile = await _parse(ANALYZE_SYSTEM, [{"type": "text", "text": text}], ProductProfile)
+    if new_price_eur:
+        profile.new_price_eur = new_price_eur
+    return profile
+
+
 # ---------------------------------------------------------------------------
 # Puntuación de anuncios
 # ---------------------------------------------------------------------------

@@ -5,12 +5,15 @@ import { ImagePlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { shopDomain, track } from "@/lib/analytics";
-import { searchByImage, searchByUrl, type SearchResponse } from "@/lib/api";
+import { searchByImage, searchByText, searchByUrl, type SearchResponse } from "@/lib/api";
 import { APPLE_EASE } from "./Reveal";
 import Results from "./Results";
 import Segmented from "./Segmented";
 
-type Mode = "url" | "image";
+type Mode = "url" | "image" | "text";
+
+/** Nombre de cada modo en la analítica. */
+const MODE_NAME: Record<Mode, string> = { url: "enlace", image: "foto", text: "texto" };
 
 const STEPS = [
   "Analizando el producto…",
@@ -35,6 +38,7 @@ export default function SearchPanel({
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [description, setDescription] = useState("");
+  const [textQuery, setTextQuery] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0);
@@ -74,22 +78,30 @@ export default function SearchPanel({
       setError("Sube una foto del objeto.");
       return;
     }
+    if (mode === "text" && textQuery.trim().length < 3) {
+      setError("Describe un poco más lo que buscas.");
+      return;
+    }
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
     setStep(0);
     setLoading(true);
     try {
+      const price = Number(newPrice.replace(",", ".")) || undefined;
       const data =
         mode === "url"
           ? await searchByUrl(url.trim(), notes.trim(), controller.signal)
-          : await searchByImage(file!, description.trim(), Number(newPrice.replace(",", ".")) || undefined, controller.signal);
+          : mode === "image"
+            ? await searchByImage(file!, description.trim(), price, controller.signal)
+            : await searchByText(textQuery.trim(), price, controller.signal);
       setResult(data);
       setSearchCount((n) => n + 1);
       track("busqueda", {
-        modo: mode === "url" ? "enlace" : "foto",
+        modo: MODE_NAME[mode],
         tienda: mode === "url" ? shopDomain(url.trim()) : undefined,
-        producto: data.product.name,
+        // En texto sin IA, el nombre del producto es casi lo que escribió el usuario: no se envía.
+        producto: mode === "text" && !data.ai_enabled ? undefined : data.product.name,
         marca: data.product.brand,
         categoria: data.product.category,
         resultados: data.listings.length,
@@ -102,7 +114,7 @@ export default function SearchPanel({
     } catch (err) {
       if ((err as Error).name !== "AbortError") {
         setError((err as Error).message);
-        track("busqueda_error", { modo: mode === "url" ? "enlace" : "foto" });
+        track("busqueda_error", { modo: MODE_NAME[mode] });
       }
     } finally {
       if (abortRef.current === controller) setLoading(false);
@@ -137,12 +149,13 @@ export default function SearchPanel({
             options={[
               { value: "url", label: "Enlace" },
               { value: "image", label: "Foto" },
+              { value: "text", label: "Texto" },
             ]}
           />
         </div>
 
         <AnimatePresence mode="wait" initial={false}>
-          {mode === "url" ? (
+          {mode === "url" && (
             <motion.div
               key="url"
               initial={{ opacity: 0, y: 8 }}
@@ -173,7 +186,8 @@ export default function SearchPanel({
                 className={`${field} h-12 text-[15px]`}
               />
             </motion.div>
-          ) : (
+          )}
+          {mode === "image" && (
             <motion.div
               key="image"
               initial={{ opacity: 0, y: 8 }}
@@ -234,6 +248,45 @@ export default function SearchPanel({
                 inputMode="decimal"
                 aria-label="Precio nuevo en euros"
                 placeholder="Precio nuevo en € (para calcular el ahorro)"
+                value={newPrice}
+                onChange={(e) => setNewPrice(e.target.value.replace(/[^\d.,]/g, ""))}
+                className={`${field} h-12 text-[15px]`}
+              />
+            </motion.div>
+          )}
+          {mode === "text" && (
+            <motion.div
+              key="text"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.35, ease: APPLE_EASE }}
+              className="mt-6 space-y-3"
+            >
+              <label htmlFor="text-query" className="sr-only">
+                Describe lo que buscas
+              </label>
+              <textarea
+                id="text-query"
+                placeholder="Describe lo que buscas: qué es y, si lo sabes, marca, modelo, talla, color, materiales…"
+                value={textQuery}
+                onChange={(e) => setTextQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  // Ctrl/Cmd + Intro busca sin tener que ir al botón
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) e.currentTarget.form?.requestSubmit();
+                }}
+                maxLength={1000}
+                rows={4}
+                className={`${field} resize-none py-3.5`}
+              />
+              <p className="px-1 text-xs text-ink-3">
+                Por ejemplo: «sillón de lectura de piel marrón, estilo nórdico» o «patinete eléctrico Xiaomi Pro 2».
+              </p>
+              <input
+                type="text"
+                inputMode="decimal"
+                aria-label="Precio nuevo en euros"
+                placeholder="Precio nuevo en € (opcional, para calcular el ahorro)"
                 value={newPrice}
                 onChange={(e) => setNewPrice(e.target.value.replace(/[^\d.,]/g, ""))}
                 className={`${field} h-12 text-[15px]`}

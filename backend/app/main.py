@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from . import ai
 from .config import settings
 from .product_page import UnsafeUrlError, assert_safe_url, fetch_product_page
-from .schemas import SearchByUrlRequest, SearchResponse
+from .schemas import SearchByTextRequest, SearchByUrlRequest, SearchResponse
 from .search import run_search
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -70,6 +70,20 @@ async def search_by_url(body: SearchByUrlRequest) -> SearchResponse:
         _log_ai_failure(exc, url)
         profile, ai_used = ai.heuristic_page_profile(page, url, body.notes), False
     return await run_search(profile, source_image=page.image if page else None, ai_used=ai_used)
+
+
+@app.post("/api/search/text", response_model=SearchResponse)
+async def search_by_text(body: SearchByTextRequest) -> SearchResponse:
+    description = body.description.strip()
+    if len(description) < 3:
+        raise HTTPException(400, "Describe un poco más lo que buscas.")
+    ai_used = True
+    try:
+        profile = await ai.analyze_text(description, body.new_price_eur)
+    except Exception as exc:  # noqa: BLE001 - sin IA se busca con las palabras de la descripción
+        _log_ai_failure(exc, "una descripción")
+        profile, ai_used = ai.heuristic_profile(description, None, body.new_price_eur), False
+    return await run_search(profile, ai_used=ai_used)
 
 
 @app.post("/api/search/image", response_model=SearchResponse)
