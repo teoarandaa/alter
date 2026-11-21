@@ -21,9 +21,9 @@ const STEPS: {
   {
     icon: Link2,
     image: "paso-1-enlace.svg",
-    title: "Pega un enlace.",
+    title: "Pega un enlace,",
     alt: Camera,
-    altTitle: "O una foto. O descríbelo.",
+    altTitle: "una foto o descríbelo.",
     text: "El enlace de la tienda donde ibas a comprarlo nuevo, una foto o unas pocas palabras: «sillón de piel marrón», «iPhone 13 128 GB»…",
   },
   {
