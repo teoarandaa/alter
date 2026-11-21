@@ -41,6 +41,8 @@ class Settings:
     admin_token: str | None = field(default_factory=lambda: os.getenv("ALTER_ADMIN_TOKEN") or None)
     # Clave de administración de Anthropic (sk-ant-admin...), solo para leer el gasto en Claude.
     anthropic_admin_key: str | None = field(default_factory=lambda: os.getenv("ANTHROPIC_ADMIN_KEY") or None)
+    # Sal secreta para contar usuarios únicos sin guardar IPs (si falta, se deriva de APIFY_TOKEN).
+    usage_salt: str | None = field(default_factory=lambda: os.getenv("ALTER_USAGE_SALT") or None)
 
     @property
     def demo_mode(self) -> bool:

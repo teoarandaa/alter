@@ -358,7 +358,7 @@ def test_admin_stats_requires_token(monkeypatch):
     monkeypatch.setattr(main, "settings", dataclasses.replace(config.settings, admin_token=None))
     assert client.get("/api/admin/stats").status_code == 404
 
-    async def fake_stats(refresh=False):
+    async def fake_stats(range_key="cycle", refresh=False):
         return {"totals": {"usd": 1.5}}
 
     async def no_sleep(_):
@@ -371,3 +371,54 @@ def test_admin_stats_requires_token(monkeypatch):
     assert client.get("/api/admin/stats", headers={"Authorization": "Bearer otro"}).status_code == 401
     res = client.get("/api/admin/stats", headers={"Authorization": "Bearer secreto"})
     assert res.status_code == 200 and res.json()["totals"]["usd"] == 1.5
+
+
+def test_admin_ranges():
+    """Las franjas de N días terminan hoy (incluido) y «todo» empieza en el alta de Apify."""
+    from datetime import datetime, timezone
+
+    from app import admin
+
+    now = datetime(2026, 11, 21, 15, 30, tzinfo=timezone.utc)
+    account = {
+        "status": "ok",
+        "created_at": datetime(2026, 11, 19, 13, 44, tzinfo=timezone.utc),
+        "cycle_start": datetime(2026, 11, 21, tzinfo=timezone.utc),
+        "cycle_end": datetime(2026, 12, 21, tzinfo=timezone.utc),
+    }
+    assert admin._resolve_range("1d", now, account) == (
+        datetime(2026, 11, 21, tzinfo=timezone.utc),
+        datetime(2026, 11, 22, tzinfo=timezone.utc),
+    )
+    assert admin._resolve_range("7d", now, account)[0] == datetime(2026, 11, 15, tzinfo=timezone.utc)
+    assert admin._resolve_range("all", now, account)[0] == datetime(2026, 11, 19, tzinfo=timezone.utc)
+    assert admin._resolve_range("cycle", now, account) == (account["cycle_start"], account["cycle_end"])
+    assert admin._resolve_range("cycle", now, {"status": "error"})[0] == datetime(2026, 11, 1, tzinfo=timezone.utc)
+
+
+def test_usage_counts_unique_searchers(monkeypatch):
+    """El recuento distingue personas (IP + navegador) sin guardar la IP, y cuenta todas las búsquedas."""
+    import asyncio
+    import dataclasses
+
+    from starlette.requests import Request
+
+    from app import config, usage
+
+    monkeypatch.setattr(usage, "settings", dataclasses.replace(config.settings, apify_token=None, usage_salt="sal"))
+    monkeypatch.setattr(usage, "_pending_users", {})
+    monkeypatch.setattr(usage, "_pending_searches", {})
+    monkeypatch.setattr(usage, "_first_seen", {})
+
+    def req(ip, ua="Firefox"):
+        headers = [(b"x-forwarded-for", f"{ip}, 10.0.0.1".encode()), (b"user-agent", ua.encode())]
+        return Request({"type": "http", "headers": headers, "client": ("10.0.0.1", 1)})
+
+    for r in (req("1.1.1.1"), req("1.1.1.1"), req("2.2.2.2"), req("1.1.1.1", "Chrome")):
+        usage.record_search(r)
+    month = usage._month()
+    counts = asyncio.run(usage.monthly_counts([month]))[month]
+    assert counts["users"] == 3 and counts["searches"] == 4 and counts["since"]
+    assert all("1.1.1.1" not in h for h in usage._pending_users[month])
+    # El hash cambia de un mes a otro: no se puede seguir a nadie entre meses.
+    assert usage.visitor_hash("1.1.1.1", "Firefox", "2026-11") != usage.visitor_hash("1.1.1.1", "Firefox", "2026-12")

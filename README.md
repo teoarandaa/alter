@@ -108,8 +108,10 @@ Abre http://localhost:3000.
 
 ## Panel de gastos (`/admin`)
 
-Página privada que junta en un sitio lo que cuesta Alter: gasto en Claude y en Apify del ciclo de facturación,
-gasto por día, gasto por web (qué scraper sale más caro) y **coste por búsqueda**. No guarda nada:
+Página privada que junta en un sitio lo que cuesta Alter: gasto en Claude y en Apify, gasto por día (o por
+semana o mes), gasto por web (qué scraper sale más caro) y **coste por búsqueda**. Se puede ver el ciclo de
+facturación actual de Apify, 1 día, 1 semana, 1, 3 o 6 meses, 1 año o todo el histórico. Claude solo da datos del
+último año (y desde 2026). No guarda nada:
 cada vez que se abre consulta los servicios (con 5 minutos de caché). No aparece en el menú ni en el sitemap y
 pide a los buscadores que no la indexen.
 
@@ -123,6 +125,14 @@ Se configura en el **backend** (`backend/.env` o las variables de entorno del ho
 Apify usa el `APIFY_TOKEN` de siempre. Cada bloque funciona por separado: si falta una clave, ese bloque dice
 qué falta y el resto se muestra igual. Las búsquedas se estiman con las ejecuciones de los scrapers generalistas
 (Wallapop, Milanuncios…), que se consultan en todas; las cifras exactas de uso están en Umami.
+
+**Coste por usuario al mes.** El panel divide el gasto de cada mes natural entre las personas distintas que han
+buscado ese mes, y muestra su evolución (últimos 12 meses) para ver si el coste por usuario sube o baja. Para
+contarlas, el backend convierte cada búsqueda en un hash irreversible de IP + navegador + una sal secreta que cambia
+cada mes: no se guardan IPs, no se usan cookies ni nada en el dispositivo, y no se puede seguir a nadie de un mes a
+otro. Los recuentos se guardan en un almacén clave-valor de Apify llamado `alter-usage` (Render gratuito no tiene
+disco). La sal sale de `ALTER_USAGE_SALT` o, si no existe, del `APIFY_TOKEN`; si cambia, el mes en curso empieza a
+contar de cero. El primer mes sale inflado porque los usuarios solo se cuentan desde que se activó el recuento.
 
 El panel **solo informa**: para no llevarte sustos, pon también un límite de gasto mensual en Claude Console
 (Settings → Limits) y en Apify (Settings → Usage & billing).

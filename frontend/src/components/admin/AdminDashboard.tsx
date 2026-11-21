@@ -3,9 +3,11 @@
 import { AlertCircle, LogOut, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { AdminStats, AuthError, fetchAdminStats, formatDay, formatUsd } from "@/lib/admin";
+import Segmented from "@/components/Segmented";
+import { AdminStats, AuthError, fetchAdminStats, formatDay, formatUsd, Range, RANGES } from "@/lib/admin";
 
-import DailyCostChart from "./DailyCostChart";
+import DailyCostChart, { granularityFor } from "./DailyCostChart";
+import MonthlyUserCost from "./MonthlyUserCost";
 
 const TOKEN_KEY = "alter-admin-token";
 
@@ -33,10 +35,11 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [range, setRange] = useState<Range>("cycle");
 
-  async function load(t: string, refresh = false) {
+  async function load(t: string, r: Range = range, refresh = false) {
     try {
-      const data = await fetchAdminStats(t, refresh);
+      const data = await fetchAdminStats(t, r, refresh);
       saveToken(t);
       setToken(t);
       setStats(data);
@@ -103,6 +106,9 @@ export default function AdminDashboard() {
 
   const { totals, claude, apify, period, backend } = stats;
   const periodEnd = new Date(new Date(period.end).getTime() - 1).toISOString();
+  const rangeLabel = RANGES.find((r) => r.value === period.range)?.label ?? "";
+  const granularity = granularityFor(period.start, period.end);
+  const crossesYear = period.start.slice(0, 4) !== periodEnd.slice(0, 4);
 
   return (
     <div className="mx-auto max-w-[1024px]">
@@ -111,8 +117,13 @@ export default function AdminDashboard() {
         <div>
           <h1 className="headline text-[36px] sm:text-[48px]">Gastos</h1>
           <p className="mt-1 text-[15px] text-ink-2">
-            {period.source === "apify" ? "Ciclo de facturación de Apify" : "Mes en curso"}: {formatDay(period.start)} –{" "}
-            {formatDay(periodEnd)}
+            {period.range === "cycle"
+              ? period.source === "apify"
+                ? "Ciclo de facturación de Apify"
+                : "Mes en curso"
+              : rangeLabel}
+            : {formatDay(period.start, crossesYear)}
+            {periodEnd.slice(0, 10) !== period.start.slice(0, 10) && <> – {formatDay(periodEnd, crossesYear)}</>}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -124,7 +135,7 @@ export default function AdminDashboard() {
             type="button"
             onClick={() => {
               setLoading(true);
-              void load(token, true);
+              void load(token, range, true);
             }}
             disabled={loading}
             className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-[14px] text-ink shadow-[0_1px_8px_rgba(0,0,0,0.05)] hover:text-alter-500 disabled:opacity-60"
@@ -149,6 +160,22 @@ export default function AdminDashboard() {
       </div>
       {error && <p className="mt-4 text-[14px] text-red-600">{error}</p>}
 
+      {/* Franja de tiempo */}
+      <div className="-mx-4 mt-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <Segmented
+          label="Franja de tiempo"
+          value={range}
+          onChange={(r) => {
+            setRange(r);
+            setLoading(true);
+            void load(token, r);
+          }}
+          options={RANGES}
+        />
+      </div>
+
+      <div className={`transition-opacity duration-300 ${loading ? "opacity-50" : ""}`}>
+
       {/* Cifras principales */}
       <div className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Tile
@@ -159,17 +186,23 @@ export default function AdminDashboard() {
         <Tile
           label="Claude"
           value={claude.status === "ok" ? formatUsd(claude.usd) : "—"}
-          note={claude.status === "ok" ? `${(claude.requests ?? 0).toLocaleString("es-ES")} llamadas · llega con retraso` : statusText(claude.status)}
+          note={
+            claude.status !== "ok"
+              ? statusText(claude.status)
+              : claude.partial
+                ? "Solo el último año (y desde 2026)"
+                : `${(claude.requests ?? 0).toLocaleString("es-ES")} llamadas · llega con retraso`
+          }
         />
         <Tile
           label="Apify"
           value={apify.status === "ok" ? formatUsd(apify.usd) : "—"}
           note={
             apify.status === "ok" && apify.included_usd
-              ? `de ${formatUsd(apify.included_usd, 0)} incluidos en tu plan`
+              ? `Ciclo actual: ${formatUsd(apify.cycle_usd)} de ${formatUsd(apify.included_usd, 0)} del plan`
               : statusText(apify.status)
           }
-          meter={apify.status === "ok" && apify.included_usd ? (apify.usd ?? 0) / apify.included_usd : undefined}
+          meter={apify.status === "ok" && apify.included_usd ? (apify.cycle_usd ?? 0) / apify.included_usd : undefined}
         />
         <Tile
           label="Coste por búsqueda"
@@ -183,7 +216,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Gasto por día */}
-      <Card title="Gasto por día" className="mt-3">
+      <Card title={`Gasto por ${granularity === "day" ? "día" : granularity === "week" ? "semana" : "mes"}`} className="mt-3">
         <DailyCostChart
           start={period.start}
           end={period.end}
@@ -193,13 +226,18 @@ export default function AdminDashboard() {
         />
       </Card>
 
+      {/* Coste por usuario: va por meses naturales, no depende de la franja elegida */}
+      <Card title="Coste por usuario al mes" className="mt-3">
+        <MonthlyUserCost data={stats.per_user} />
+      </Card>
+
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         {/* Gasto por web */}
         <Card title="Apify: gasto por web">
           {apify.status !== "ok" ? (
             <Notice block={apify} />
           ) : (apify.by_platform ?? []).length === 0 ? (
-            <p className="text-[15px] text-ink-2">Todavía no hay búsquedas en este ciclo.</p>
+            <p className="text-[15px] text-ink-2">No hay búsquedas en esta franja.</p>
           ) : (
             <PlatformTable rows={apify.by_platform ?? []} />
           )}
@@ -211,7 +249,7 @@ export default function AdminDashboard() {
             {claude.status !== "ok" ? (
               <Notice block={claude} />
             ) : (claude.by_model ?? []).length === 0 ? (
-              <p className="text-[15px] text-ink-2">Aún no hay datos de este periodo (pueden tardar hasta 24 h).</p>
+              <p className="text-[15px] text-ink-2">No hay datos en esta franja (pueden tardar hasta 24 h en llegar).</p>
             ) : (
               <ul className="divide-y divide-line">
                 {(claude.by_model ?? []).map((m) => (
@@ -236,6 +274,8 @@ export default function AdminDashboard() {
           </Card>
 
         </div>
+      </div>
+
       </div>
 
       <p className="mt-6 text-[13px] text-ink-3">
