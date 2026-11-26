@@ -45,6 +45,14 @@ export const viewport: Viewport = { themeColor: "#ffffff" };
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="es" className={`${inter.variable} h-full`}>
+      <head>
+        {/* Google AdSense: anuncios automáticos en todas las páginas */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7383693727799001"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className="flex min-h-full flex-col font-sans">
         <MotionProvider>{children}</MotionProvider>
         {/* Umami: solo se carga si hay ID configurado; respeta «No rastrear» del navegador */}
