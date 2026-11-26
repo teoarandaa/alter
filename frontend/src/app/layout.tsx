@@ -3,8 +3,12 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 
 import MotionProvider from "@/components/MotionProvider";
+import { ADSENSE_ERROR_PROTECTION } from "@/lib/adsense-error-protection";
 import { UMAMI_DOMAINS, UMAMI_SCRIPT_URL, UMAMI_WEBSITE_ID } from "@/lib/analytics";
 import "./globals.css";
+
+/** Etiqueta de AdSense que avisa a Google de que la página ha cargado su mensaje de recuperación. */
+const GOOGLEFC_PRESENT = `(function() {function signalGooglefcPresent() {if (!window.frames['googlefcPresent']) {if (document.body) {const iframe = document.createElement('iframe'); iframe.style = 'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;'; iframe.style.display = 'none'; iframe.name = 'googlefcPresent'; document.body.appendChild(iframe);} else {setTimeout(signalGooglefcPresent, 0);}}}signalGooglefcPresent();})();`;
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
@@ -52,6 +56,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7383693727799001"
           crossOrigin="anonymous"
         />
+        {/* AdSense: mensaje para contrarrestar el bloqueo de anuncios (Privacidad y mensajes) */}
+        <script async src="https://fundingchoicesmessages.google.com/i/pub-7383693727799001?ers=1" />
+        <script dangerouslySetInnerHTML={{ __html: GOOGLEFC_PRESENT }} />
+        {/* …y su «protección de errores», por si el bloqueador impide cargar ese mensaje */}
+        <script dangerouslySetInnerHTML={{ __html: ADSENSE_ERROR_PROTECTION }} />
       </head>
       <body className="flex min-h-full flex-col font-sans">
         <MotionProvider>{children}</MotionProvider>

@@ -145,7 +145,10 @@ export default function PrivacidadPage() {
           </tr>
           <tr>
             <td>Google Ireland Limited (Irlanda)</td>
-            <td>Publicidad (Google AdSense) y gestión del consentimiento de cookies.</td>
+            <td>
+              Publicidad (Google AdSense), gestión del consentimiento de cookies y aviso a quien navega con un bloqueador
+              de anuncios.
+            </td>
           </tr>
         </tbody>
       </table>
