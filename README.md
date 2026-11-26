@@ -143,6 +143,9 @@ El panel **solo informa**: para no llevarte sustos, pon también un límite de g
   `uvicorn app.main:app --host 0.0.0.0 --port 8000`. Pon la URL del frontend en `ALTER_ALLOWED_ORIGINS`.
 - Frontend: Vercel o la misma instancia (`npm run build && npm start`). Configura `NEXT_PUBLIC_API_URL` y
   `NEXT_PUBLIC_SITE_URL`.
+- Páginas legales (`/aviso-legal`, `/privacidad`, `/cookies`): los datos del titular que exige la LSSI se leen
+  de `ALTER_LEGAL_OWNER`, `ALTER_LEGAL_TAX_ID` y `ALTER_LEGAL_ADDRESS`, para que no queden en el repositorio.
+  Ponlas en las variables de entorno del frontend; si falta alguna, la página muestra un hueco «[…]» en amarillo.
 
 ## Ilustraciones
 

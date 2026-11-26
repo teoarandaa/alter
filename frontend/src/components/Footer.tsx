@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { LEGAL_PAGES } from "@/lib/legal";
 import { PLATFORM_SECTIONS, PLATFORMS } from "@/lib/platforms";
 
 import Logo from "./Logo";
@@ -69,6 +70,20 @@ export default function Footer() {
           Los anuncios pertenecen a cada plataforma y sus precios pueden cambiar. Los resultados marcados como
           «Patrocinado» aparecen destacados por acuerdo comercial con esa plataforma.
         </p>
+
+        <div className="mt-5 text-ink-3">
+          <nav aria-label="Información legal">
+            <ul className="flex flex-wrap gap-x-5 gap-y-2">
+              {LEGAL_PAGES.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="transition-colors hover:text-ink hover:underline">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </div>
     </footer>
   );
