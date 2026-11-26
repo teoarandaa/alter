@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import Logo from "./Logo";
+import { LogoMark } from "./Logo";
 
 const LINKS = [
   { href: "/buscar", label: "Buscar" },
@@ -14,7 +14,7 @@ export default function Nav() {
     <header className="sticky top-0 z-50 border-b border-black/[0.06] bg-white/75 backdrop-blur-xl backdrop-saturate-150">
       <nav className="mx-auto flex h-12 max-w-[1024px] items-center justify-between px-4 sm:px-6" aria-label="Principal">
         <Link href="/" aria-label="Alter, inicio" className="opacity-90 transition-opacity hover:opacity-100">
-          <Logo />
+          <LogoMark className="size-10" />
         </Link>
         <ul className="flex items-center gap-5 text-xs text-ink/80 sm:gap-8">
           {LINKS.map((l) => (
