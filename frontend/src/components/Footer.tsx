@@ -34,6 +34,11 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <a href="mailto:hola@alter2mano.es" className="transition-colors hover:text-ink hover:underline">
+                  hola@alter2mano.es
+                </a>
+              </li>
             </ul>
           </nav>
 
