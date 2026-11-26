@@ -79,8 +79,6 @@ export default function AdminDashboard() {
           void load(password.trim());
         }}
       >
-        <h1 className="headline text-[28px]">Panel de gastos</h1>
-        <p className="mt-2 text-[15px] text-ink-2">Solo para el equipo de Alter.</p>
         <label className="mt-6 block text-[13px] font-medium text-ink-2" htmlFor="admin-password">
           Contraseña
         </label>
