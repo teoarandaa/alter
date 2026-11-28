@@ -11,12 +11,13 @@ import an from "./dictionaries/an";
 import ast from "./dictionaries/ast";
 import ca from "./dictionaries/ca";
 import eu from "./dictionaries/eu";
+import fala from "./dictionaries/fala";
 import gl from "./dictionaries/gl";
 import oc from "./dictionaries/oc";
 import va from "./dictionaries/va";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "./locales";
 
-const DICTIONARIES: Record<Locale, Dictionary> = { es, ca, va, gl, eu, oc, an, ast };
+const DICTIONARIES: Record<Locale, Dictionary> = { es, ca, va, gl, eu, oc, an, ast, fala };
 
 export function getDictionary(locale: Locale): Dictionary {
   return DICTIONARIES[locale];

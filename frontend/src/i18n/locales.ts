@@ -29,7 +29,7 @@ export type LocaleInfo = {
 };
 
 /** En el orden del desplegable. El primero es el idioma por defecto (sin prefijo en la URL). */
-export const LOCALES = ["es", "ca", "va", "gl", "eu", "oc", "an", "ast"] as const;
+export const LOCALES = ["es", "ca", "va", "gl", "eu", "oc", "an", "ast", "fala"] as const;
 
 export type Locale = (typeof LOCALES)[number];
 
@@ -44,6 +44,7 @@ export const LOCALE_INFO: Record<Locale, LocaleInfo> = {
   oc: { name: "Aranés", spanishName: "Aranés (occitano)", short: "OC", htmlLang: "oc-aranes", hreflang: "oc", ogLocale: "oc_ES" },
   an: { name: "Aragonés", spanishName: "Aragonés", short: "AN", htmlLang: "an", hreflang: "an", ogLocale: "an_ES" },
   ast: { name: "Asturllionés", spanishName: "Asturleonés", short: "AST", htmlLang: "ast", ogLocale: "ast_ES" },
+  fala: { name: "A fala", spanishName: "Fala de Xálima", short: "FALA", htmlLang: "fax", ogLocale: "es_ES" },
 };
 
 export function isLocale(value: string | undefined): value is Locale {
