@@ -8,6 +8,7 @@ import { lang } from "next/root-params";
 
 import es, { type Dictionary } from "./dictionaries/es";
 import an from "./dictionaries/an";
+import ast from "./dictionaries/ast";
 import ca from "./dictionaries/ca";
 import eu from "./dictionaries/eu";
 import gl from "./dictionaries/gl";
@@ -15,7 +16,7 @@ import oc from "./dictionaries/oc";
 import va from "./dictionaries/va";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "./locales";
 
-const DICTIONARIES: Record<Locale, Dictionary> = { es, ca, va, gl, eu, oc, an };
+const DICTIONARIES: Record<Locale, Dictionary> = { es, ca, va, gl, eu, oc, an, ast };
 
 export function getDictionary(locale: Locale): Dictionary {
   return DICTIONARIES[locale];
