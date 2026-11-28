@@ -7,9 +7,10 @@
 import { lang } from "next/root-params";
 
 import es, { type Dictionary } from "./dictionaries/es";
+import ca from "./dictionaries/ca";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "./locales";
 
-const DICTIONARIES: Record<Locale, Dictionary> = { es };
+const DICTIONARIES: Record<Locale, Dictionary> = { es, ca };
 
 export function getDictionary(locale: Locale): Dictionary {
   return DICTIONARIES[locale];

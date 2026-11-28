@@ -124,9 +124,11 @@ export default function LanguageSwitcher({
                     >
                       <span className="min-w-0">
                         <span className="block text-[14px] leading-tight">{item.name}</span>
-                        <span lang="es" className="block text-[11px] leading-tight text-ink-3">
-                          {item.spanishName}
-                        </span>
+                        {item.spanishName !== item.name && (
+                          <span lang="es" className="block text-[11px] leading-tight text-ink-3">
+                            {item.spanishName}
+                          </span>
+                        )}
                       </span>
                       {active && <Check className="size-4 shrink-0" aria-hidden="true" />}
                     </a>

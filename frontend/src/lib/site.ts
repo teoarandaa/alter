@@ -72,7 +72,9 @@ export function pageMetadata({
   return {
     title,
     description,
-    alternates: translated ? { canonical, languages: languageAlternates(path) } : { canonical },
+    // Las alternativas de idioma solo salen en las versiones que forman parte del grupo (las que tienen hreflang).
+    alternates:
+      translated && LOCALE_INFO[locale].hreflang ? { canonical, languages: languageAlternates(path) } : { canonical },
     openGraph: article
       ? { ...common, type: "article", publishedTime: article.published, modifiedTime: article.modified }
       : { ...common, type: "website" },

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { GUIDES } from "@/content/guides";
-import { LOCALES, localizedPath } from "@/i18n/locales";
+import { LOCALE_INFO, LOCALES, localizedPath } from "@/i18n/locales";
 import { absoluteUrl, INDEXABLE, languageAlternates } from "@/lib/site";
 
 /**
@@ -26,7 +26,7 @@ function translated(path: string, lastModified: string): MetadataRoute.Sitemap {
   return LOCALES.map((locale) => ({
     url: absoluteUrl(localizedPath(locale, path)),
     lastModified: [lastModified, UPDATED.idiomas].sort().at(-1),
-    alternates: { languages },
+    ...(LOCALE_INFO[locale].hreflang ? { alternates: { languages } } : {}),
   }));
 }
 

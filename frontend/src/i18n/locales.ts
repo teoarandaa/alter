@@ -18,14 +18,18 @@ export type LocaleInfo = {
   short: string;
   /** Etiqueta BCP 47 para <html lang>. */
   htmlLang: string;
-  /** Código hreflang para Google. Sin él, esa versión no se anuncia como alternativa de idioma. */
+  /**
+   * Código hreflang para Google (ISO 639-1, el único que Google admite). Sin él, esa versión no se
+   * anuncia como alternativa de idioma: es el caso de las variedades sin código propio (valenciano,
+   * balear, canario) y de las lenguas sin código ISO 639-1 (asturleonés, fala).
+   */
   hreflang?: string;
   /** Idioma de las tarjetas de Open Graph (idioma_PAÍS). */
   ogLocale: string;
 };
 
 /** En el orden del desplegable. El primero es el idioma por defecto (sin prefijo en la URL). */
-export const LOCALES = ["es"] as const;
+export const LOCALES = ["es", "ca"] as const;
 
 export type Locale = (typeof LOCALES)[number];
 
@@ -33,6 +37,7 @@ export const DEFAULT_LOCALE: Locale = LOCALES[0];
 
 export const LOCALE_INFO: Record<Locale, LocaleInfo> = {
   es: { name: "Español", spanishName: "Castellano", short: "ES", htmlLang: "es", hreflang: "es", ogLocale: "es_ES" },
+  ca: { name: "Català", spanishName: "Catalán", short: "CA", htmlLang: "ca", hreflang: "ca", ogLocale: "ca_ES" },
 };
 
 export function isLocale(value: string | undefined): value is Locale {
