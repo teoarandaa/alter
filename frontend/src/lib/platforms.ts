@@ -207,3 +207,12 @@ export const PLATFORM_SECTIONS: PlatformSection[] = [
 
 /** Nombres de todas las webs, sin repetir, en el orden de los apartados. */
 export const PLATFORMS = PLATFORM_SECTIONS.flatMap((s) => s.platforms.map((p) => p.name));
+
+/** Ficha de una web por su clave (p. ej. «wallapop»), junto al apartado en el que aparece. */
+export function platformByKey(key: string): (PlatformInfo & { sectionId: string }) | undefined {
+  for (const section of PLATFORM_SECTIONS) {
+    const platform = section.platforms.find((p) => p.key === key);
+    if (platform) return { ...platform, sectionId: section.id };
+  }
+  return undefined;
+}

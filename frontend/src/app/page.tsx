@@ -1,14 +1,27 @@
-import { Camera, Link2, ScanSearch, Tags } from "lucide-react";
+import type { Metadata } from "next";
+import { Camera, ChevronRight, Link2, ScanSearch, Tags } from "lucide-react";
 import Link from "next/link";
 
 import Hero from "@/components/Hero";
 import CountUp from "@/components/CountUp";
+import Faq from "@/components/Faq";
 import Footer from "@/components/Footer";
+import JsonLd from "@/components/JsonLd";
 import Nav from "@/components/Nav";
 import Reveal from "@/components/Reveal";
 import ScrollText from "@/components/ScrollText";
+import { GUIDES } from "@/content/guides";
 import { illustration, type IllustrationName } from "@/lib/illustrations";
 import { PLATFORMS } from "@/lib/platforms";
+import { HOME_DESCRIPTION, HOME_TITLE } from "@/lib/seo-copy";
+import { pageMetadata, SITE_TAGLINE } from "@/lib/site";
+import { homeGraph } from "@/lib/structured-data";
+
+export const metadata: Metadata = {
+  ...pageMetadata({ title: HOME_TITLE, description: HOME_DESCRIPTION, path: "/", socialTitle: `Alter · ${SITE_TAGLINE}` }),
+  // La portada no lleva « · Alter» al final: el título ya empieza por la marca.
+  title: { absolute: HOME_TITLE },
+};
 
 const STEPS: {
   icon: typeof Link2;
@@ -53,6 +66,7 @@ export default function Home() {
   return (
     <>
       <Nav />
+      <JsonLd data={homeGraph()} />
 
       <main>
         <Hero image={illustration("hero.svg")} />
@@ -126,6 +140,41 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Guías: contenido útil que Google posiciona y que enlaza con el buscador */}
+        <section id="guias" className="bg-paper px-4 py-24 sm:px-6 sm:py-32">
+          <div className="mx-auto max-w-[1024px]">
+            <Reveal>
+              <h2 className="headline text-[40px] sm:text-[64px]">Compra usado sin sustos.</h2>
+              <p className="mt-4 max-w-[640px] text-[19px] text-ink-2 sm:text-[21px]">
+                Qué revisar antes de pagar, en guías cortas y prácticas.
+              </p>
+            </Reveal>
+            <ul className="mt-12 grid gap-5 md:grid-cols-3">
+              {GUIDES.slice(0, 3).map((g, i) => (
+                <Reveal as="li" key={g.slug} delay={i * 0.12}>
+                  <Link
+                    href={`/guias/${g.slug}`}
+                    className="group flex h-full flex-col rounded-[28px] bg-white p-8 transition-colors hover:bg-alter-50"
+                  >
+                    <h3 className="text-[21px] font-semibold leading-snug tracking-[-0.02em] text-ink">{g.title}</h3>
+                    <p className="mt-3 flex-1 text-[15px] leading-relaxed text-ink-2">{g.excerpt}</p>
+                    <span className="mt-5 inline-flex items-center text-[15px] text-alter-500">
+                      Leer la guía
+                      <ChevronRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                    </span>
+                  </Link>
+                </Reveal>
+              ))}
+            </ul>
+            <Link href="/guias" className="group mt-8 inline-flex items-center text-[17px] text-alter-500 hover:underline">
+              Ver todas las guías
+              <ChevronRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        </section>
+
+        <Faq />
 
         {/* Llamada final */}
         <section className="bg-paper px-4 py-24 text-center sm:px-6 sm:py-32">

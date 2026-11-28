@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { GUIDES } from "@/content/guides";
 import { LEGAL_PAGES } from "@/lib/legal";
 import { PLATFORM_SECTIONS, PLATFORMS } from "@/lib/platforms";
 
@@ -11,22 +12,23 @@ const NAV = [
   { href: "/buscar", label: "Buscar" },
   { href: "/#como-funciona", label: "Cómo funciona" },
   { href: "/#impacto", label: "Impacto" },
+  { href: "/#preguntas", label: "Preguntas frecuentes" },
 ];
 
 export default function Footer() {
   return (
     <footer className="bg-paper px-4 text-xs text-ink-2 sm:px-6">
       <div className="mx-auto max-w-[1024px] border-t border-line pb-10 pt-10">
-        <div className="grid gap-10 sm:grid-cols-[2fr_1fr_1fr]">
-          <div>
+        <div className="grid gap-10 sm:grid-cols-3 lg:grid-cols-[2fr_1fr_1fr_1fr]">
+          <div className="sm:col-span-3 lg:col-span-1">
             <Logo />
             <p className="mt-3 max-w-[280px] leading-relaxed text-ink-3">
-              Alternativas de segunda mano que ayudan al planeta.
+              El buscador de segunda mano: Wallapop, Vinted, eBay y {PLATFORMS.length - 3} webs más en una sola búsqueda.
             </p>
           </div>
 
           <nav aria-label="Pie de página">
-            <h2 className="font-semibold text-ink">Alter</h2>
+            <p className="font-semibold text-ink">Alter</p>
             <ul className="mt-3 space-y-2.5">
               {NAV.map((l) => (
                 <li key={l.href}>
@@ -43,12 +45,29 @@ export default function Footer() {
             </ul>
           </nav>
 
+          <nav aria-label="Guías">
+            <p className="font-semibold text-ink">
+              <Link href="/guias" className="hover:underline">
+                Guías
+              </Link>
+            </p>
+            <ul className="mt-3 space-y-2.5">
+              {GUIDES.map((g) => (
+                <li key={g.slug}>
+                  <Link href={`/guias/${g.slug}`} className="transition-colors hover:text-ink hover:underline">
+                    {g.navLabel}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
           <nav aria-label="Webs en las que buscamos">
-            <h2 className="font-semibold text-ink">
+            <p className="font-semibold text-ink">
               <Link href="/plataformas" className="hover:underline">
                 Buscamos en
               </Link>
-            </h2>
+            </p>
             <ul className="mt-3 space-y-2.5">
               {PLATFORM_SECTIONS.map((s) => (
                 <li key={s.id}>

@@ -8,12 +8,13 @@ import PlatformMark from "@/components/PlatformMark";
 import Reveal from "@/components/Reveal";
 import { availableLogos } from "@/lib/logos";
 import { PLATFORM_SECTIONS, PLATFORMS } from "@/lib/platforms";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Dónde buscamos",
+export const metadata: Metadata = pageMetadata({
+  title: `${PLATFORMS.length} webs de segunda mano en España`,
   description: `Las ${PLATFORMS.length} webs de segunda mano en las que busca Alter: Wallapop, Vinted, Milanuncios, eBay, Back Market, Vestiaire Collective y más, y qué encontrarás en cada una.`,
-  alternates: { canonical: "/plataformas" },
-};
+  path: "/plataformas",
+});
 
 export default function PlataformasPage() {
   const logos = availableLogos(PLATFORM_SECTIONS.flatMap((s) => s.platforms.map((p) => p.key)));
@@ -25,7 +26,7 @@ export default function PlataformasPage() {
       <main className="flex-1">
         {/* Cabecera */}
         <section className="bg-white px-4 pb-12 pt-20 text-center sm:px-6 sm:pb-16 sm:pt-28">
-          <Reveal className="mx-auto max-w-[760px]">
+          <Reveal fade={false} className="mx-auto max-w-[760px]">
             <h1 className="headline text-[40px] sm:text-[64px]">
               {PLATFORMS.length} webs.
               <br />

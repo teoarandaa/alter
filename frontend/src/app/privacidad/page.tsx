@@ -3,12 +3,13 @@ import Link from "next/link";
 
 import LegalPage, { Ext, Field } from "@/components/LegalPage";
 import { LEGAL } from "@/lib/legal";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Política de privacidad",
   description: "Qué datos trata Alter cuando buscas alternativas de segunda mano, para qué, con quién los compartimos y cómo ejercer tus derechos.",
-  alternates: { canonical: "/privacidad" },
-};
+  path: "/privacidad",
+});
 
 export default function PrivacidadPage() {
   return (

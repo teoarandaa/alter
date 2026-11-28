@@ -15,8 +15,10 @@ export default function Hero({ image = null }: { image?: string | null }) {
   const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
   const y = useTransform(scrollYProgress, [0, 1], [0, 80]);
 
-  const appear = (delay: number) => ({
-    initial: { opacity: 0, y: 24 },
+  // El titular y el texto (lo primero que se pinta, el «LCP» de Google) no empiezan invisibles:
+  // solo suben un poco. Así se ven desde el primer instante aunque el JavaScript tarde en cargar.
+  const appear = (delay: number, fade = true) => ({
+    initial: fade ? { opacity: 0, y: 24 } : { y: 16 },
     animate: { opacity: 1, y: 0 },
     transition: { duration: 1.1, delay, ease: APPLE_EASE },
   });
@@ -38,15 +40,19 @@ export default function Hero({ image = null }: { image?: string | null }) {
         >
           <div>
             <motion.h1
-              {...appear(0)}
+              {...appear(0, false)}
               className={`headline ${image ? "text-[44px] sm:text-[60px] lg:text-[68px]" : "text-[44px] sm:text-[72px] lg:text-[88px]"}`}
             >
+              {/* Lo que somos, con las palabras que la gente busca en Google */}
+              <span className="mb-4 block text-[15px] font-semibold tracking-normal text-ink-3 sm:text-[17px]">
+                El buscador de segunda mano
+              </span>
               Segunda mano.
               <br />
               <span className="text-alter-500">Primera opción.</span>
             </motion.h1>
             <motion.p
-              {...appear(0.25)}
+              {...appear(0.15, false)}
               className={`mt-6 text-[19px] leading-snug text-ink-2 ${image ? "mx-auto max-w-[520px] sm:text-[21px] md:mx-0" : "max-w-[640px] sm:text-[24px]"}`}
             >
               Pega el enlace de lo que ibas a comprar nuevo, sube una foto o simplemente descríbelo. Alter lo encuentra de segunda mano y te dice

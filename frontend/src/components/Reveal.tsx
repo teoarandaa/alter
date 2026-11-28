@@ -11,17 +11,20 @@ export default function Reveal({
   className,
   delay = 0,
   as = "div",
+  fade = true,
 }: {
   children: ReactNode;
   className?: string;
   delay?: number;
   as?: "div" | "li";
+  /** false para lo que se ve al cargar (titulares): solo sube, sin empezar invisible. Mejora el LCP. */
+  fade?: boolean;
 }) {
   const Component = as === "li" ? motion.li : motion.div;
   return (
     <Component
       className={className}
-      initial={{ opacity: 0, y: 28 }}
+      initial={fade ? { opacity: 0, y: 28 } : { y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 1, delay, ease: APPLE_EASE }}

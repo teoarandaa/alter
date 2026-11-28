@@ -3,12 +3,13 @@ import Link from "next/link";
 
 import CookieSettingsButton from "@/components/CookieSettingsButton";
 import LegalPage, { Ext } from "@/components/LegalPage";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Política de cookies",
   description: "Qué cookies usa Alter, para qué sirven y cómo aceptarlas, rechazarlas o cambiar tu elección.",
-  alternates: { canonical: "/cookies" },
-};
+  path: "/cookies",
+});
 
 export default function CookiesPage() {
   return (

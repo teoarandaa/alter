@@ -5,6 +5,8 @@ import Script from "next/script";
 import MotionProvider from "@/components/MotionProvider";
 import { ADSENSE_ERROR_PROTECTION } from "@/lib/adsense-error-protection";
 import { UMAMI_DOMAINS, UMAMI_SCRIPT_URL, UMAMI_WEBSITE_ID } from "@/lib/analytics";
+import { HOME_DESCRIPTION, HOME_TITLE } from "@/lib/seo-copy";
+import { INDEXABLE, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 /** Etiqueta de AdSense que avisa a Google de que la página ha cargado su mensaje de recuperación. */
@@ -12,36 +14,33 @@ const GOOGLEFC_PRESENT = `(function() {function signalGooglefcPresent() {if (!wi
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
+/**
+ * Metadatos comunes. Cada página define los suyos (título, descripción, canónica y tarjetas sociales)
+ * con pageMetadata() de lib/site.ts; aquí solo va lo que comparten todas.
+ */
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Alter · Alternativas de segunda mano que ayudan al planeta",
-    template: "%s · Alter",
+    default: HOME_TITLE,
+    template: `%s · ${SITE_NAME}`,
   },
-  description:
-    "Pega el enlace de lo que ibas a comprar nuevo, sube una foto o descríbelo: Alter busca ese objeto de segunda mano en Wallapop, Vinted, Milanuncios, eBay y más, y te dice cuánto te ahorras. Gratis.",
-  keywords: [
-    "segunda mano",
-    "comparador segunda mano",
-    "Wallapop",
-    "Vinted",
-    "Milanuncios",
-    "eBay",
-    "reciclaje",
-    "consumo sostenible",
-    "ahorro",
-  ],
-  openGraph: {
-    type: "website",
-    locale: "es_ES",
-    siteName: "Alter",
-    title: "Alter · Segunda mano. Primera opción.",
-    description: "Encuentra de segunda mano lo que ibas a comprar nuevo y descubre cuánto ahorras.",
-  },
-  twitter: { card: "summary_large_image", title: "Alter · Segunda mano. Primera opción." },
-  alternates: { canonical: "/" },
+  description: HOME_DESCRIPTION,
+  applicationName: SITE_NAME,
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  formatDetection: { telephone: false, address: false, email: false },
+  // Solo se indexa el dominio de producción; preproducción y local quedan fuera de Google.
+  robots: INDEXABLE
+    ? {
+        index: true,
+        follow: true,
+        googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+      }
+    : { index: false, follow: false },
+  // Verificación de Google Search Console por meta etiqueta (opcional; mejor verificar por DNS).
+  ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
+  openGraph: { type: "website", locale: "es_ES", siteName: SITE_NAME },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = { themeColor: "#ffffff" };
@@ -58,9 +57,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
         {/* AdSense: mensaje para contrarrestar el bloqueo de anuncios (Privacidad y mensajes) */}
         <script async src="https://fundingchoicesmessages.google.com/i/pub-7383693727799001?ers=1" />
-        <script dangerouslySetInnerHTML={{ __html: GOOGLEFC_PRESENT }} />
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: GOOGLEFC_PRESENT }} />
         {/* …y su «protección de errores», por si el bloqueador impide cargar ese mensaje */}
-        <script dangerouslySetInnerHTML={{ __html: ADSENSE_ERROR_PROTECTION }} />
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: ADSENSE_ERROR_PROTECTION }} />
       </head>
       <body className="flex min-h-full flex-col font-sans">
         <MotionProvider>{children}</MotionProvider>

@@ -5,7 +5,7 @@ import { LogoMark } from "./Logo";
 const LINKS = [
   { href: "/buscar", label: "Buscar" },
   { href: "/#como-funciona", label: "Cómo funciona" },
-  { href: "/#impacto", label: "Impacto" },
+  { href: "/guias", label: "Guías" },
 ];
 
 /** Menú fijo y translúcido: deja ver el contenido difuminado debajo. */

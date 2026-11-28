@@ -3,12 +3,13 @@ import Link from "next/link";
 
 import LegalPage, { Field } from "@/components/LegalPage";
 import { LEGAL } from "@/lib/legal";
+import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Aviso legal",
   description: "Quién está detrás de Alter y las condiciones de uso de la web.",
-  alternates: { canonical: "/aviso-legal" },
-};
+  path: "/aviso-legal",
+});
 
 export default function AvisoLegalPage() {
   return (

@@ -28,17 +28,20 @@ const field =
 export default function SearchPanel({
   emptyIllustration = null,
   logos = {},
+  initialText = "",
 }: {
   emptyIllustration?: string | null;
   logos?: Record<string, string>;
+  /** Texto con el que abrir el modo «Descríbelo» (p. ej. desde una guía: /buscar?q=iPhone 13). No lanza la búsqueda. */
+  initialText?: string;
 }) {
-  const [mode, setMode] = useState<Mode>("url");
+  const [mode, setMode] = useState<Mode>(initialText ? "text" : "url");
   const [url, setUrl] = useState("");
   const [notes, setNotes] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [description, setDescription] = useState("");
-  const [textQuery, setTextQuery] = useState("");
+  const [textQuery, setTextQuery] = useState(initialText);
   const [newPrice, setNewPrice] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(0);
