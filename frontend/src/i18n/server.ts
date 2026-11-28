@@ -11,6 +11,7 @@ import an from "./dictionaries/an";
 import ast from "./dictionaries/ast";
 import balear from "./dictionaries/balear";
 import ca from "./dictionaries/ca";
+import canarias from "./dictionaries/canarias";
 import eu from "./dictionaries/eu";
 import fala from "./dictionaries/fala";
 import gl from "./dictionaries/gl";
@@ -18,7 +19,7 @@ import oc from "./dictionaries/oc";
 import va from "./dictionaries/va";
 import { DEFAULT_LOCALE, isLocale, type Locale } from "./locales";
 
-const DICTIONARIES: Record<Locale, Dictionary> = { es, ca, va, balear, gl, eu, oc, an, ast, fala };
+const DICTIONARIES: Record<Locale, Dictionary> = { es, canarias, ca, va, balear, gl, eu, oc, an, ast, fala };
 
 export function getDictionary(locale: Locale): Dictionary {
   return DICTIONARIES[locale];
