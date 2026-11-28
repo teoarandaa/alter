@@ -16,6 +16,8 @@ export const ILLUSTRATIONS = {
   "impacto.svg": "Eco conscious",
   "sin-resultados.svg": "Empty cart",
   "final.svg": "Window shopping",
+  // Sin la línea gris del suelo y recortada a lo ancho: se sienta sobre la línea superior del pie.
+  "sentada.svg": "Effortless Love",
 } as const;
 
 export type IllustrationName = keyof typeof ILLUSTRATIONS;

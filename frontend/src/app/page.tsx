@@ -61,7 +61,7 @@ const FIGURES = [
 
 export default function Home() {
   const impactImage = illustration("impacto.svg");
-  const finalImage = illustration("final.svg");
+  const perchImage = illustration("sentada.svg");
 
   return (
     <>
@@ -177,7 +177,7 @@ export default function Home() {
         <Faq />
 
         {/* Llamada final */}
-        <section className="bg-paper px-4 py-24 text-center sm:px-6 sm:py-32">
+        <section className={`bg-paper px-4 pt-24 text-center sm:px-6 sm:pt-32 ${perchImage ? "" : "pb-24 sm:pb-32"}`}>
           <Reveal className="mx-auto max-w-[680px]">
             <h2 className="headline text-[40px] sm:text-[64px]">Tu próxima compra ya existe.</h2>
             <p className="mt-4 text-[19px] text-ink-2 sm:text-[21px]">Solo hay que encontrarla.</p>
@@ -187,15 +187,21 @@ export default function Home() {
             >
               Empezar a buscar
             </Link>
-            {finalImage && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={finalImage} alt="" className="mx-auto mt-16 h-44 w-auto sm:h-56" />
-            )}
           </Reveal>
+          {perchImage && (
+            // La pareja se sienta sobre la línea superior del pie: el asiento está al 65,64 % de la altura
+            // de la imagen, así que el margen negativo hace bajar el 34,36 % restante (las piernas) al pie.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={perchImage}
+              alt=""
+              className="relative z-10 mx-auto mt-14 h-(--perch-h) w-auto -mb-[calc(var(--perch-h)*0.3436)] [--perch-h:190px] sm:mt-16 sm:[--perch-h:240px]"
+            />
+          )}
         </section>
       </main>
 
-      <Footer />
+      <Footer roomForIllustration={Boolean(perchImage)} />
     </>
   );
 }

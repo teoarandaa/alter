@@ -15,10 +15,17 @@ const NAV = [
   { href: "/#preguntas", label: "Preguntas frecuentes" },
 ];
 
-export default function Footer() {
+export default function Footer({
+  roomForIllustration = false,
+}: {
+  /** Deja hueco arriba para las piernas de la ilustración sentada sobre la línea (portada). */
+  roomForIllustration?: boolean;
+}) {
   return (
     <footer className="bg-paper px-4 text-xs text-ink-2 sm:px-6">
-      <div className="mx-auto max-w-[1024px] border-t border-line pb-10 pt-10">
+      <div
+        className={`mx-auto max-w-[1024px] border-t border-line pb-10 ${roomForIllustration ? "pt-24 sm:pt-28" : "pt-10"}`}
+      >
         <div className="grid gap-10 sm:grid-cols-3 lg:grid-cols-[2fr_1fr_1fr_1fr]">
           <div className="sm:col-span-3 lg:col-span-1">
             <Logo />
