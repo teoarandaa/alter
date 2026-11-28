@@ -6,17 +6,28 @@ import Footer from "@/components/Footer";
 import Nav from "@/components/Nav";
 import PlatformMark from "@/components/PlatformMark";
 import Reveal from "@/components/Reveal";
+import { fill } from "@/i18n/format";
+import { isLocale, localizedPath } from "@/i18n/locales";
+import { getDictionary, getI18n } from "@/i18n/server";
 import { availableLogos } from "@/lib/logos";
 import { PLATFORM_SECTIONS, PLATFORMS } from "@/lib/platforms";
 import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = pageMetadata({
-  title: `${PLATFORMS.length} webs de segunda mano en España`,
-  description: `Las ${PLATFORMS.length} webs de segunda mano en las que busca Alter: Wallapop, Vinted, Milanuncios, eBay, Back Market, Vestiaire Collective y más, y qué encontrarás en cada una.`,
-  path: "/plataformas",
-});
+export async function generateMetadata({ params }: PageProps<"/[lang]/plataformas">): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLocale(lang)) return {};
+  const { meta } = getDictionary(lang);
+  return pageMetadata({
+    title: fill(meta.platformsTitle, { n: PLATFORMS.length }),
+    description: fill(meta.platformsDescription, { n: PLATFORMS.length }),
+    path: "/plataformas",
+    locale: lang,
+  });
+}
 
-export default function PlataformasPage() {
+export default async function PlataformasPage() {
+  const { locale, t } = await getI18n();
+  const page = t.platformsPage;
   const logos = availableLogos(PLATFORM_SECTIONS.flatMap((s) => s.platforms.map((p) => p.key)));
 
   return (
@@ -28,21 +39,18 @@ export default function PlataformasPage() {
         <section className="bg-white px-4 pb-12 pt-20 text-center sm:px-6 sm:pb-16 sm:pt-28">
           <Reveal fade={false} className="mx-auto max-w-[760px]">
             <h1 className="headline text-[40px] sm:text-[64px]">
-              {PLATFORMS.length} webs.
+              {fill(page.title, { n: PLATFORMS.length })}
               <br />
-              <span className="text-alter-500">Una sola búsqueda.</span>
+              <span className="text-alter-500">{page.highlight}</span>
             </h1>
-            <p className="mx-auto mt-5 max-w-[620px] text-[19px] text-ink-2 sm:text-[21px]">
-              Alter busca en las principales webs de segunda mano con mercado en España. Según lo que busques, te
-              enseñamos sus anuncios o te llevamos directamente a su búsqueda.
-            </p>
+            <p className="mx-auto mt-5 max-w-[620px] text-[19px] text-ink-2 sm:text-[21px]">{page.intro}</p>
           </Reveal>
 
           {/* Accesos rápidos a cada apartado */}
           <Reveal delay={0.1} className="mx-auto mt-10 flex max-w-[860px] flex-wrap justify-center gap-x-6 gap-y-3">
             {PLATFORM_SECTIONS.map((s) => (
               <a key={s.id} href={`#${s.id}`} className="group inline-flex items-center text-[15px] text-alter-500 hover:underline">
-                {s.title}
+                {t.platformSections[s.id].title}
                 <ChevronRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
               </a>
             ))}
@@ -58,8 +66,10 @@ export default function PlataformasPage() {
           >
             <div className="mx-auto max-w-[1024px]">
               <Reveal>
-                <h2 className="headline text-[32px] sm:text-[44px]">{section.title}</h2>
-                <p className="mt-2 max-w-[640px] text-[17px] text-ink-2 sm:text-[19px]">{section.intro}</p>
+                <h2 className="headline text-[32px] sm:text-[44px]">{t.platformSections[section.id].title}</h2>
+                <p className="mt-2 max-w-[640px] text-[17px] text-ink-2 sm:text-[19px]">
+                  {t.platformSections[section.id].intro}
+                </p>
               </Reveal>
 
               <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -74,13 +84,13 @@ export default function PlataformasPage() {
                       <PlatformMark platformKey={p.key} name={p.name} color={p.color} logo={logos[p.key]} />
                     </h3>
                     <p className={`mt-2 text-xs font-medium ${p.inline ? "text-alter-600" : "text-ink-3"}`}>
-                      {p.inline ? "Anuncios en Alter, con precio y ahorro" : "Te enlazamos su búsqueda"}
+                      {p.inline ? page.inline : page.linked}
                     </p>
-                    <p className="mt-3 text-[15px] leading-relaxed text-ink-2">{p.description}</p>
+                    <p className="mt-3 text-[15px] leading-relaxed text-ink-2">{t.platforms[p.key].description}</p>
 
-                    <p className="mt-5 text-xs font-semibold text-ink-3">Qué encontrarás</p>
-                    <ul className="mt-2 flex flex-wrap gap-1.5" aria-label={`Productos en ${p.name}`}>
-                      {p.products.map((product) => (
+                    <p className="mt-5 text-xs font-semibold text-ink-3">{page.whatYouFind}</p>
+                    <ul className="mt-2 flex flex-wrap gap-1.5" aria-label={fill(page.productsIn, { name: p.name })}>
+                      {t.platforms[p.key].products.map((product) => (
                         <li key={product} className="rounded-full bg-alter-50 px-2.5 py-1 text-xs text-alter-700">
                           {product}
                         </li>
@@ -93,7 +103,7 @@ export default function PlataformasPage() {
                       rel="noopener noreferrer"
                       className="group mt-auto inline-flex items-center gap-1 pt-6 text-[15px] text-alter-500 hover:underline"
                     >
-                      Visitar {p.name}
+                      {fill(page.visit, { name: p.name })}
                       <ArrowUpRight className="size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                     </a>
                   </Reveal>
@@ -106,13 +116,13 @@ export default function PlataformasPage() {
         {/* Llamada final */}
         <section className="bg-white px-4 py-20 text-center sm:px-6 sm:py-28">
           <Reveal className="mx-auto max-w-[680px]">
-            <h2 className="headline text-[32px] sm:text-[48px]">No tienes que mirarlas una a una.</h2>
-            <p className="mt-3 text-[19px] text-ink-2">Pega un enlace, sube una foto o descríbelo, y buscamos por ti.</p>
+            <h2 className="headline text-[32px] sm:text-[48px]">{page.finalTitle}</h2>
+            <p className="mt-3 text-[19px] text-ink-2">{page.finalText}</p>
             <Link
-              href="/buscar"
+              href={localizedPath(locale, "/buscar")}
               className="mt-8 inline-block rounded-full bg-alter-500 px-6 py-3 text-[17px] text-white transition-colors duration-300 hover:bg-alter-600"
             >
-              Buscar alternativas
+              {page.finalCta}
             </Link>
           </Reveal>
         </section>

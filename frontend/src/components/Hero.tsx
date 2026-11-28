@@ -5,10 +5,20 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useRef } from "react";
 
+import type { Dictionary } from "@/i18n/dictionaries/es";
 import { APPLE_EASE } from "./Reveal";
 
 /** Portada: titular grande que se aleja suavemente al hacer scroll, con ilustración opcional debajo. */
-export default function Hero({ image = null }: { image?: string | null }) {
+export default function Hero({
+  image = null,
+  t,
+  searchHref,
+}: {
+  image?: string | null;
+  t: Dictionary["hero"];
+  /** Enlace al buscador en el idioma de la página. */
+  searchHref: string;
+}) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const scale = useTransform(scrollYProgress, [0, 1], [1, 0.9]);
@@ -45,31 +55,30 @@ export default function Hero({ image = null }: { image?: string | null }) {
             >
               {/* Lo que somos, con las palabras que la gente busca en Google */}
               <span className="mb-4 block text-[15px] font-semibold tracking-normal text-ink-3 sm:text-[17px]">
-                El buscador de segunda mano
+                {t.eyebrow}
               </span>
-              Segunda mano.
+              {t.title}
               <br />
-              <span className="text-alter-500">Primera opción.</span>
+              <span className="text-alter-500">{t.highlight}</span>
             </motion.h1>
             <motion.p
               {...appear(0.15, false)}
               className={`mt-6 text-[19px] leading-snug text-ink-2 ${image ? "mx-auto max-w-[520px] sm:text-[21px] md:mx-0" : "max-w-[640px] sm:text-[24px]"}`}
             >
-              Pega el enlace de lo que ibas a comprar nuevo, sube una foto o simplemente descríbelo. Alter lo encuentra de segunda mano y te dice
-              cuánto ahorras.
+              {t.text}
             </motion.p>
             <motion.div
               {...appear(0.4)}
               className={`mt-9 flex flex-col items-center gap-5 sm:flex-row sm:gap-8 ${image ? "sm:justify-center md:justify-start" : ""}`}
             >
               <Link
-                href="/buscar"
+                href={searchHref}
                 className="rounded-full bg-alter-500 px-6 py-3 text-[17px] text-white transition-colors duration-300 hover:bg-alter-600"
               >
-                Buscar alternativas
+                {t.cta}
               </Link>
               <a href="#como-funciona" className="group inline-flex items-center text-[17px] text-alter-500 hover:underline">
-                Cómo funciona
+                {t.how}
                 <ChevronRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
               </a>
             </motion.div>

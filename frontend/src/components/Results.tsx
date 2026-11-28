@@ -4,6 +4,8 @@ import { motion } from "motion/react";
 import { ChevronRight, Info, PackageSearch } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import type { Dictionary } from "@/i18n/dictionaries/es";
+import { fill, plural } from "@/i18n/format";
 import { track } from "@/lib/analytics";
 import { formatEur, PLATFORM_COLORS, PLATFORM_NAMES, type Listing, type SearchResponse } from "@/lib/api";
 import PlatformMark from "./PlatformMark";
@@ -13,12 +15,17 @@ import Segmented from "./Segmented";
 type Filter = "all" | "exact" | "similar";
 type Sort = "recommended" | "cheapest" | "savings";
 
+type ResultsText = Dictionary["results"];
+
 export default function Results({
+  t,
   data,
   image,
   emptyIllustration = null,
   logos = {},
 }: {
+  /** Textos en el idioma de la página. */
+  t: ResultsText;
   data: SearchResponse;
   image: string | null;
   emptyIllustration?: string | null;
@@ -64,10 +71,10 @@ export default function Results({
 
   const stats = [
     bestSavings != null
-      ? { value: `${Math.round(bestSavings)} %`, label: "de ahorro máximo", accent: true }
-      : { value: "—", label: "de ahorro máximo", accent: false },
-    { value: String(allListings.length), label: allListings.length === 1 ? "alternativa" : "alternativas", accent: false },
-    { value: cheapest != null ? formatEur(cheapest) : "—", label: "el precio más bajo", accent: false },
+      ? { value: `${Math.round(bestSavings)} %`, label: t.maxSavings, accent: true }
+      : { value: "—", label: t.maxSavings, accent: false },
+    { value: String(allListings.length), label: plural(allListings.length, t.alternatives), accent: false },
+    { value: cheapest != null ? formatEur(cheapest) : "—", label: t.lowestPrice, accent: false },
   ];
 
   return (
@@ -76,7 +83,7 @@ export default function Results({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1, ease: APPLE_EASE }}
       className="mx-auto mt-24 w-full max-w-[1024px]"
-      aria-label="Resultados"
+      aria-label={t.label}
     >
       {/* Ficha del producto */}
       <header className="mx-auto max-w-[680px] text-center">
@@ -92,7 +99,7 @@ export default function Results({
             {product.new_price_eur != null && (
               <>
                 {(product.brand || product.model) && " · "}
-                {formatEur(product.new_price_eur)} nuevo
+                {fill(t.newPrice, { price: formatEur(product.new_price_eur) })}
               </>
             )}
           </p>
@@ -104,8 +111,8 @@ export default function Results({
         <p className="mx-auto mt-8 flex max-w-[680px] items-start justify-center gap-2 text-center text-xs text-ink-3">
           <Info className="mt-px size-3.5 shrink-0" />
           <span>
-            {data.demo_mode && "Modo demo: anuncios de ejemplo que llevan a la búsqueda real de cada web. "}
-            {!data.ai_enabled && "Búsqueda hecha sin IA: el análisis del producto es aproximado."}
+            {data.demo_mode && `${t.demo} `}
+            {!data.ai_enabled && t.noAi}
           </span>
         </p>
       )}
@@ -124,7 +131,7 @@ export default function Results({
       {product.new_price_eur == null && (
         <div className="mx-auto mt-8 flex max-w-[420px] items-center justify-center gap-3">
           <label htmlFor="manual-price" className="shrink-0 text-[15px] text-ink-2">
-            ¿Cuánto cuesta nuevo?
+            {t.manualPrice}
           </label>
           <span className="flex h-10 items-center rounded-full bg-white px-4 shadow-[0_1px_8px_rgba(0,0,0,0.06)] focus-within:ring-4 focus-within:ring-alter-500/15">
             <input
@@ -144,25 +151,25 @@ export default function Results({
       {/* Controles */}
       <div className="mt-16 flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
         <Segmented
-          label="Filtrar resultados"
+          label={t.filterLabel}
           value={filter}
           onChange={setFilter}
           options={[
-            { value: "all", label: `Todos` },
-            { value: "exact", label: `Iguales (${exactCount})` },
-            { value: "similar", label: `Similares (${allListings.length - exactCount})` },
+            { value: "all", label: t.filterAll },
+            { value: "exact", label: fill(t.filterExact, { n: exactCount }) },
+            { value: "similar", label: fill(t.filterSimilar, { n: allListings.length - exactCount }) },
           ]}
         />
         <label className="flex items-center gap-2 text-[14px] text-ink-2">
-          Ordenar por
+          {t.sortLabel}
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as Sort)}
             className="cursor-pointer bg-transparent text-ink outline-none"
           >
-            <option value="recommended">Recomendados</option>
-            <option value="cheapest">Precio más bajo</option>
-            <option value="savings">Mayor ahorro</option>
+            <option value="recommended">{t.sortRecommended}</option>
+            <option value="cheapest">{t.sortCheapest}</option>
+            <option value="savings">{t.sortSavings}</option>
           </select>
         </label>
       </div>
@@ -171,7 +178,7 @@ export default function Results({
       {listings.length > 0 ? (
         <ul className="mt-8 grid gap-x-5 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
           {listings.map((l, i) => (
-            <ListingCard key={l.id} listing={l} index={i} sort={sort} logo={logos[l.platform] ?? null} />
+            <ListingCard key={l.id} t={t} listing={l} index={i} sort={sort} logo={logos[l.platform] ?? null} />
           ))}
         </ul>
       ) : (
@@ -180,18 +187,14 @@ export default function Results({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={emptyIllustration} alt="" className="mx-auto mb-8 h-40 w-auto" />
           )}
-          <p className="text-[17px] text-ink-2">
-            No hay anuncios que encajen. Prueba en las webs de abajo o con otra descripción.
-          </p>
+          <p className="text-[17px] text-ink-2">{t.empty}</p>
         </div>
       )}
 
       {/* Plataformas sin API */}
       {data.links.length > 0 && (
         <div className="mt-20 border-t border-line pt-10 text-center">
-          <p className="text-[17px] text-ink-2">
-            Busca también «{product.search_queries[0]}» en
-          </p>
+          <p className="text-[17px] text-ink-2">{fill(t.alsoSearch, { query: product.search_queries[0] })}</p>
           <div className="mt-4 flex flex-wrap justify-center gap-x-8 gap-y-3">
             {data.links.map((link) => (
               <a
@@ -211,9 +214,9 @@ export default function Results({
       )}
 
       <p className="mt-10 text-center text-xs text-ink-3">
-        Resultados de {platformsWithResults} {platformsWithResults === 1 ? "plataforma" : "plataformas"}
+        {plural(platformsWithResults, t.resultsFrom)}
         {data.platforms.some((p) => !p.ok) &&
-          `. No hemos podido consultar ${data.platforms.filter((p) => !p.ok).map((p) => p.name).join(", ")}`}
+          fill(t.unavailable, { list: data.platforms.filter((p) => !p.ok).map((p) => p.name).join(", ") })}
         .
       </p>
     </motion.section>
@@ -221,11 +224,13 @@ export default function Results({
 }
 
 function ListingCard({
+  t,
   listing: l,
   index,
   sort,
   logo,
 }: {
+  t: ResultsText;
   listing: Listing;
   index: number;
   sort: Sort;
@@ -289,18 +294,18 @@ function ListingCard({
               logo={logo}
               size="sm"
             />
-            {l.sponsored && <span className="text-ink-3">· Patrocinado</span>}
+            {l.sponsored && <span className="text-ink-3">· {t.sponsored}</span>}
           </p>
           <h3 className="mt-1.5 line-clamp-2 text-[17px] font-semibold leading-snug text-ink transition-colors group-hover:text-alter-600">
             {l.title}
           </h3>
           <p className="mt-1 text-[17px] text-ink">{formatEur(l.price_eur)}</p>
           {l.savings_eur != null && l.savings_eur > 0 && (
-            <p className="text-[14px] text-alter-500">Ahorras {formatEur(l.savings_eur)}</p>
+            <p className="text-[14px] text-alter-500">{fill(t.youSave, { amount: formatEur(l.savings_eur) })}</p>
           )}
           <p className="mt-2 text-xs text-ink-3">
             {[
-              l.match_type === "exact" ? "Mismo producto" : "Alternativa similar",
+              l.match_type === "exact" ? t.exact : t.similar,
               l.condition,
               l.location,
             ]

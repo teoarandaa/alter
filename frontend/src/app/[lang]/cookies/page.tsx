@@ -3,13 +3,20 @@ import Link from "next/link";
 
 import CookieSettingsButton from "@/components/CookieSettingsButton";
 import LegalPage, { Ext } from "@/components/LegalPage";
+import { DEFAULT_LOCALE, isLocale } from "@/i18n/locales";
 import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Política de cookies",
-  description: "Qué cookies usa Alter, para qué sirven y cómo aceptarlas, rechazarlas o cambiar tu elección.",
-  path: "/cookies",
-});
+export async function generateMetadata({ params }: PageProps<"/[lang]/cookies">): Promise<Metadata> {
+  const { lang } = await params;
+  // Los textos legales solo están en castellano: en los demás idiomas la canónica es la versión en castellano.
+  return pageMetadata({
+    title: "Política de cookies",
+    description: "Qué cookies usa Alter, para qué sirven y cómo aceptarlas, rechazarlas o cambiar tu elección.",
+    path: "/cookies",
+    locale: isLocale(lang) ? lang : DEFAULT_LOCALE,
+    translated: false,
+  });
+}
 
 export default function CookiesPage() {
   return (

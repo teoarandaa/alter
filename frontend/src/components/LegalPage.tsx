@@ -2,15 +2,23 @@ import type { ReactNode } from "react";
 
 import Footer from "@/components/Footer";
 import Nav from "@/components/Nav";
+import SpanishOnlyNotice from "@/components/SpanishOnlyNotice";
+import { DEFAULT_LOCALE } from "@/i18n/locales";
+import { getI18n } from "@/i18n/server";
 import { LEGAL } from "@/lib/legal";
 
-/** Plantilla común de las páginas legales: cabecera, fecha de actualización y texto con estilo. */
-export default function LegalPage({ title, intro, children }: { title: string; intro?: ReactNode; children: ReactNode }) {
+/**
+ * Plantilla común de las páginas legales: cabecera, fecha de actualización y texto con estilo.
+ * Los textos legales solo están en castellano; en los demás idiomas se avisa antes del texto.
+ */
+export default async function LegalPage({ title, intro, children }: { title: string; intro?: ReactNode; children: ReactNode }) {
+  const { locale, t } = await getI18n();
   return (
     <>
       <Nav />
       <main className="flex-1 bg-white px-4 pb-24 pt-16 sm:px-6 sm:pt-24">
-        <article className="mx-auto max-w-[720px]">
+        <SpanishOnlyNotice text={t.spanishOnly.legal} className="mx-auto mb-10 max-w-[720px]" />
+        <article className="mx-auto max-w-[720px]" lang={locale === DEFAULT_LOCALE ? undefined : "es"}>
           <h1 className="headline text-[36px] sm:text-[52px]">{title}</h1>
           <p className="mt-3 text-sm text-ink-3">Última actualización: {LEGAL.updated}</p>
           {intro && <div className="mt-6 text-[17px] leading-relaxed text-ink-2 sm:text-[19px]">{intro}</div>}

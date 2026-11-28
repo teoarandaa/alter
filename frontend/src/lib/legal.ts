@@ -16,8 +16,5 @@ export const LEGAL = {
   updated: "26 de noviembre de 2026",
 };
 
-export const LEGAL_PAGES = [
-  { href: "/aviso-legal", label: "Aviso legal" },
-  { href: "/privacidad", label: "Privacidad" },
-  { href: "/cookies", label: "Cookies" },
-];
+/** Páginas legales (/aviso-legal…). Su nombre en cada idioma está en el diccionario (footer.legal). */
+export const LEGAL_PAGES = [{ slug: "aviso-legal" }, { slug: "privacidad" }, { slug: "cookies" }] as const;

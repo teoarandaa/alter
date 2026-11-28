@@ -1,13 +1,13 @@
 import type { MetadataRoute } from "next";
 
-import { HOME_DESCRIPTION } from "@/lib/seo-copy";
+import es from "@/i18n/dictionaries/es";
 
 /** Manifiesto web: nombre, colores e icono al guardar Alter en la pantalla de inicio del móvil. */
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Alter · Buscador de segunda mano",
     short_name: "Alter",
-    description: HOME_DESCRIPTION,
+    description: es.meta.homeDescription,
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

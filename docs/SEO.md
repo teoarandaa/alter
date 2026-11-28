@@ -18,8 +18,13 @@ competencia y un plan constante. Este documento recoge las tres cosas.
 
 ## 2. Lo que ya está hecho en la web
 
-- **Títulos y descripciones** propios en cada página, con la palabra clave al principio (`src/lib/seo-copy.ts`
-  para la portada; `pageMetadata()` en `src/lib/site.ts` para el resto).
+- **Títulos y descripciones** propios en cada página, con la palabra clave al principio (en `meta` de cada
+  diccionario, `src/i18n/dictionaries/`; `pageMetadata()` en `src/lib/site.ts` los convierte en metadatos).
+- **Idiomas**: la interfaz y las páginas principales (portada, buscador y plataformas) están en cada idioma de
+  `src/i18n/locales.ts`. El castellano va sin prefijo (`/buscar`) y los demás con el suyo (`/ca/buscar`). Cada
+  versión lleva su canónica y las etiquetas `hreflang` de las demás, y salen todas en el sitemap. Las guías y los
+  textos legales solo están en castellano: en los demás idiomas se muestran con un aviso y su canónica apunta a la
+  versión en castellano, para que Google no los vea como contenido duplicado.
 - **URL canónica** en todas las páginas, y redirecciones http → https y www → sin www (ya las hacía el hosting).
 - **Preproducción fuera de Google**: solo `alter2mano.es` se deja indexar; cualquier otro dominio sale con
   `noindex` y un `robots.txt` que lo bloquea todo.

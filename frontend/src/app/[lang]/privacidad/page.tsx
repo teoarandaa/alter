@@ -3,13 +3,20 @@ import Link from "next/link";
 
 import LegalPage, { Ext, Field } from "@/components/LegalPage";
 import { LEGAL } from "@/lib/legal";
+import { DEFAULT_LOCALE, isLocale } from "@/i18n/locales";
 import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Política de privacidad",
-  description: "Qué datos trata Alter cuando buscas alternativas de segunda mano, para qué, con quién los compartimos y cómo ejercer tus derechos.",
-  path: "/privacidad",
-});
+export async function generateMetadata({ params }: PageProps<"/[lang]/privacidad">): Promise<Metadata> {
+  const { lang } = await params;
+  // Los textos legales solo están en castellano: en los demás idiomas la canónica es la versión en castellano.
+  return pageMetadata({
+    title: "Política de privacidad",
+    description: "Qué datos trata Alter cuando buscas alternativas de segunda mano, para qué, con quién los compartimos y cómo ejercer tus derechos.",
+    path: "/privacidad",
+    locale: isLocale(lang) ? lang : DEFAULT_LOCALE,
+    translated: false,
+  });
+}
 
 export default function PrivacidadPage() {
   return (

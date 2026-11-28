@@ -7,20 +7,26 @@ import Nav from "@/components/Nav";
 import Reveal from "@/components/Reveal";
 import SearchPanel from "@/components/SearchPanel";
 import SearchPanelFromUrl from "@/components/SearchPanelFromUrl";
+import { fill } from "@/i18n/format";
+import { isLocale, localizedPath } from "@/i18n/locales";
+import { getDictionary, getI18n } from "@/i18n/server";
 import { illustration } from "@/lib/illustrations";
 import { availableLogos } from "@/lib/logos";
 import { PLATFORM_SECTIONS, PLATFORMS } from "@/lib/platforms";
 import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Buscar de segunda mano por enlace, foto o texto",
-  description:
-    "Pega el enlace de lo que ibas a comprar nuevo, sube una foto o descríbelo y encuentra alternativas de segunda mano en Wallapop, Vinted, Milanuncios, eBay y más.",
-  path: "/buscar",
-});
+export async function generateMetadata({ params }: PageProps<"/[lang]/buscar">): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLocale(lang)) return {};
+  const { meta } = getDictionary(lang);
+  return pageMetadata({ title: meta.searchTitle, description: meta.searchDescription, path: "/buscar", locale: lang });
+}
 
-export default function BuscarPage() {
+export default async function BuscarPage() {
+  const { locale, t } = await getI18n();
   const panelProps = {
+    locale,
+    t: { search: t.search, results: t.results },
     emptyIllustration: illustration("sin-resultados.svg"),
     logos: availableLogos(PLATFORM_SECTIONS.flatMap((s) => s.platforms.map((p) => p.key))),
   };
@@ -31,8 +37,8 @@ export default function BuscarPage() {
 
       <main className="flex-1 bg-paper px-4 pb-24 pt-16 sm:px-6 sm:pb-32 sm:pt-24">
         <Reveal fade={false} className="mx-auto max-w-[680px] text-center">
-          <h1 className="headline text-[36px] sm:text-[56px]">¿Qué ibas a comprar?</h1>
-          <p className="mt-3 text-[19px] text-ink-2 sm:text-[21px]">Lo buscamos de segunda mano por ti.</p>
+          <h1 className="headline text-[36px] sm:text-[56px]">{t.searchPage.title}</h1>
+          <p className="mt-3 text-[19px] text-ink-2 sm:text-[21px]">{t.searchPage.subtitle}</p>
         </Reveal>
         <Reveal delay={0.1} className="mt-12">
           {/* Sin ?q= (o mientras se lee la URL) se muestra el buscador vacío */}
@@ -41,13 +47,13 @@ export default function BuscarPage() {
           </Suspense>
         </Reveal>
         <Reveal delay={0.2} className="mx-auto mt-12 max-w-[680px] text-center text-xs leading-relaxed text-ink-3">
-          Buscamos en {PLATFORMS.length} webs de segunda mano.{" "}
-          <Link href="/plataformas" className="text-alter-500 hover:underline">
-            Ver cuáles
+          {fill(t.searchPage.platforms, { n: PLATFORMS.length })}{" "}
+          <Link href={localizedPath(locale, "/plataformas")} className="text-alter-500 hover:underline">
+            {t.searchPage.seeWhich}
           </Link>
           {" · "}
-          <Link href="/guias" className="text-alter-500 hover:underline">
-            Guías para comprar sin sustos
+          <Link href={localizedPath(locale, "/guias")} className="text-alter-500 hover:underline">
+            {t.searchPage.guides}
           </Link>
         </Reveal>
       </main>

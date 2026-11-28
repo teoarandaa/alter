@@ -3,13 +3,20 @@ import Link from "next/link";
 
 import LegalPage, { Field } from "@/components/LegalPage";
 import { LEGAL } from "@/lib/legal";
+import { DEFAULT_LOCALE, isLocale } from "@/i18n/locales";
 import { pageMetadata } from "@/lib/site";
 
-export const metadata: Metadata = pageMetadata({
-  title: "Aviso legal",
-  description: "Quién está detrás de Alter y las condiciones de uso de la web.",
-  path: "/aviso-legal",
-});
+export async function generateMetadata({ params }: PageProps<"/[lang]/aviso-legal">): Promise<Metadata> {
+  const { lang } = await params;
+  // Los textos legales solo están en castellano: en los demás idiomas la canónica es la versión en castellano.
+  return pageMetadata({
+    title: "Aviso legal",
+    description: "Quién está detrás de Alter y las condiciones de uso de la web.",
+    path: "/aviso-legal",
+    locale: isLocale(lang) ? lang : DEFAULT_LOCALE,
+    translated: false,
+  });
+}
 
 export default function AvisoLegalPage() {
   return (

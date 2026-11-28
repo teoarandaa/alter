@@ -4,32 +4,54 @@ import { AnimatePresence, motion } from "motion/react";
 import { ImagePlus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import type { Dictionary } from "@/i18n/dictionaries/es";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/locales";
 import { shopDomain, track } from "@/lib/analytics";
-import { searchByImage, searchByText, searchByUrl, type SearchResponse } from "@/lib/api";
+import { searchByImage, searchByText, searchByUrl, SearchError, type SearchResponse } from "@/lib/api";
 import { APPLE_EASE } from "./Reveal";
 import Results from "./Results";
 import Segmented from "./Segmented";
 
 type Mode = "url" | "image" | "text";
 
-/** Nombre de cada modo en la analítica. */
+/** Nombre de cada modo en la analítica (no se traduce: así se pueden comparar los idiomas). */
 const MODE_NAME: Record<Mode, string> = { url: "enlace", image: "foto", text: "texto" };
 
-const STEPS = [
-  "Analizando el producto…",
-  "Buscando en Wallapop, Milanuncios, Vinted y eBay…",
-  "Comparando cada anuncio con el original…",
-  "Calculando cuánto ahorras…",
-];
+/** Mensaje de error en el idioma de la página. */
+function errorMessage(err: unknown, mode: Mode, locale: Locale, errors: Dictionary["search"]["errors"]): string {
+  if (!(err instanceof SearchError)) return errors.generic;
+  if (err.status === 0) return errors.network;
+  // En castellano, el texto del backend es más preciso que el genérico (dice qué le pasa al enlace).
+  if (locale === DEFAULT_LOCALE && err.detail) return err.detail;
+  switch (err.status) {
+    case 400:
+      return mode === "url" ? errors.badLink : mode === "text" ? errors.shortText : errors.describeObject;
+    case 413:
+      return errors.imageTooBig;
+    case 415:
+      return errors.imageFormat;
+    case 422:
+      return errors.invalid;
+    case 503:
+      return mode === "image" ? errors.photosUnavailable : errors.generic;
+    default:
+      return errors.generic;
+  }
+}
 
 const field =
   "w-full rounded-xl border border-transparent bg-paper px-4 text-[17px] text-ink outline-none transition duration-300 placeholder:text-ink-3 focus:border-alter-500 focus:bg-white focus:ring-4 focus:ring-alter-500/15";
 
 export default function SearchPanel({
+  locale,
+  t,
   emptyIllustration = null,
   logos = {},
   initialText = "",
 }: {
+  locale: Locale;
+  /** Textos del buscador y de los resultados en el idioma de la página. */
+  t: { search: Dictionary["search"]; results: Dictionary["results"] };
   emptyIllustration?: string | null;
   logos?: Record<string, string>;
   /** Texto con el que abrir el modo «Descríbelo» (p. ej. desde una guía: /buscar?q=iPhone 13). No lanza la búsqueda. */
@@ -54,9 +76,9 @@ export default function SearchPanel({
 
   useEffect(() => {
     if (!loading) return;
-    const id = setInterval(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)), 4500);
+    const id = setInterval(() => setStep((s) => Math.min(s + 1, t.search.steps.length - 1)), 4500);
     return () => clearInterval(id);
-  }, [loading]);
+  }, [loading, t.search.steps.length]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -74,15 +96,15 @@ export default function SearchPanel({
     e.preventDefault();
     setError(null);
     if (mode === "url" && !/^https?:\/\/\S+\.\S+/.test(url.trim())) {
-      setError("Pega un enlace válido (empieza por http:// o https://).");
+      setError(t.search.errors.invalidUrl);
       return;
     }
     if (mode === "image" && !file) {
-      setError("Sube una foto del objeto.");
+      setError(t.search.errors.noPhoto);
       return;
     }
     if (mode === "text" && textQuery.trim().length < 3) {
-      setError("Describe un poco más lo que buscas.");
+      setError(t.search.errors.shortText);
       return;
     }
     abortRef.current?.abort();
@@ -116,7 +138,7 @@ export default function SearchPanel({
       setResultImage(mode === "image" ? preview : data.source_image);
     } catch (err) {
       if ((err as Error).name !== "AbortError") {
-        setError((err as Error).message);
+        setError(errorMessage(err, mode, locale, t.search.errors));
         track("busqueda_error", { modo: MODE_NAME[mode] });
       }
     } finally {
@@ -146,13 +168,13 @@ export default function SearchPanel({
 
         <div className="flex justify-center">
           <Segmented
-            label="Cómo quieres buscar"
+            label={t.search.modesLabel}
             value={mode}
             onChange={setMode}
             options={[
-              { value: "url", label: "Enlace" },
-              { value: "image", label: "Foto" },
-              { value: "text", label: "Texto" },
+              { value: "url", label: t.search.modes.url },
+              { value: "image", label: t.search.modes.image },
+              { value: "text", label: t.search.modes.text },
             ]}
           />
         </div>
@@ -168,21 +190,21 @@ export default function SearchPanel({
               className="mt-6 space-y-3"
             >
               <label htmlFor="url" className="sr-only">
-                Enlace del producto nuevo
+                {t.search.urlLabel}
               </label>
               <input
                 id="url"
                 type="url"
                 inputMode="url"
-                placeholder="Enlace del producto en la tienda"
+                placeholder={t.search.urlPlaceholder}
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 className={`${field} h-14`}
               />
               <input
                 type="text"
-                aria-label="Detalles opcionales"
-                placeholder="Detalles opcionales: talla, color, presupuesto…"
+                aria-label={t.search.notesLabel}
+                placeholder={t.search.notesPlaceholder}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 maxLength={1000}
@@ -202,7 +224,7 @@ export default function SearchPanel({
               {preview ? (
                 <div className="flex items-center gap-4 rounded-xl bg-paper p-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={preview} alt="Foto subida" className="size-16 rounded-lg object-cover" />
+                  <img src={preview} alt={t.search.photoAlt} className="size-16 rounded-lg object-cover" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[15px] text-ink">{file?.name}</p>
                     <p className="text-xs text-ink-3">{file ? (file.size / 1024 / 1024).toFixed(1) : 0} MB</p>
@@ -210,7 +232,7 @@ export default function SearchPanel({
                   <button
                     type="button"
                     onClick={() => pickFile(null)}
-                    aria-label="Quitar foto"
+                    aria-label={t.search.removePhoto}
                     className="grid size-8 place-items-center rounded-full bg-black/5 text-ink-2 transition hover:bg-black/10"
                   >
                     <X className="size-4" />
@@ -227,8 +249,8 @@ export default function SearchPanel({
                   className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl bg-paper px-4 py-10 text-center transition duration-300 hover:bg-[#f2f2f5]"
                 >
                   <ImagePlus className="size-7 text-alter-500" strokeWidth={1.5} />
-                  <span className="text-[17px] text-ink">Arrastra una foto o elige una</span>
-                  <span className="text-xs text-ink-3">JPG, PNG o WEBP · hasta 5 MB</span>
+                  <span className="text-[17px] text-ink">{t.search.dropPhoto}</span>
+                  <span className="text-xs text-ink-3">{t.search.photoFormats}</span>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp,image/gif"
@@ -238,8 +260,8 @@ export default function SearchPanel({
                 </label>
               )}
               <textarea
-                aria-label="Descripción del objeto"
-                placeholder="Descríbelo si quieres: marca, materiales, medidas…"
+                aria-label={t.search.descriptionLabel}
+                placeholder={t.search.descriptionPlaceholder}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={1000}
@@ -249,8 +271,8 @@ export default function SearchPanel({
               <input
                 type="text"
                 inputMode="decimal"
-                aria-label="Precio nuevo en euros"
-                placeholder="Precio nuevo en € (para calcular el ahorro)"
+                aria-label={t.search.priceLabel}
+                placeholder={t.search.pricePlaceholder}
                 value={newPrice}
                 onChange={(e) => setNewPrice(e.target.value.replace(/[^\d.,]/g, ""))}
                 className={`${field} h-12 text-[15px]`}
@@ -267,11 +289,11 @@ export default function SearchPanel({
               className="mt-6 space-y-3"
             >
               <label htmlFor="text-query" className="sr-only">
-                Describe lo que buscas
+                {t.search.textLabel}
               </label>
               <textarea
                 id="text-query"
-                placeholder="Describe lo que buscas: qué es y, si lo sabes, marca, modelo, talla, color, materiales…"
+                placeholder={t.search.textPlaceholder}
                 value={textQuery}
                 onChange={(e) => setTextQuery(e.target.value)}
                 onKeyDown={(e) => {
@@ -282,14 +304,12 @@ export default function SearchPanel({
                 rows={4}
                 className={`${field} resize-none py-3.5`}
               />
-              <p className="px-1 text-xs text-ink-3">
-                Por ejemplo: «sillón de lectura de piel marrón, estilo nórdico» o «patinete eléctrico Xiaomi Pro 2».
-              </p>
+              <p className="px-1 text-xs text-ink-3">{t.search.textExample}</p>
               <input
                 type="text"
                 inputMode="decimal"
-                aria-label="Precio nuevo en euros"
-                placeholder="Precio nuevo en € (opcional, para calcular el ahorro)"
+                aria-label={t.search.priceLabel}
+                placeholder={t.search.priceOptionalPlaceholder}
                 value={newPrice}
                 onChange={(e) => setNewPrice(e.target.value.replace(/[^\d.,]/g, ""))}
                 className={`${field} h-12 text-[15px]`}
@@ -303,7 +323,7 @@ export default function SearchPanel({
           disabled={loading}
           className="mt-6 h-12 w-full rounded-full bg-alter-500 text-[17px] text-white transition-colors duration-300 hover:bg-alter-600 disabled:cursor-wait disabled:bg-alter-400"
         >
-          {loading ? "Buscando…" : "Buscar alternativas"}
+          {loading ? t.search.searching : t.search.submit}
         </button>
 
         <div className="min-h-6 pt-3 text-center" aria-live="polite">
@@ -317,7 +337,7 @@ export default function SearchPanel({
                 transition={{ duration: 0.4 }}
                 className="text-[15px] text-ink-2"
               >
-                {STEPS[step]}
+                {t.search.steps[step]}
               </motion.p>
             ) : (
               error && (
@@ -338,7 +358,16 @@ export default function SearchPanel({
       </form>
 
       <div ref={resultsRef} className="scroll-mt-16">
-        {result && <Results key={searchCount} data={result} image={resultImage} emptyIllustration={emptyIllustration} logos={logos} />}
+        {result && (
+          <Results
+            key={searchCount}
+            t={t.results}
+            data={result}
+            image={resultImage}
+            emptyIllustration={emptyIllustration}
+            logos={logos}
+          />
+        )}
       </div>
     </div>
   );

@@ -54,17 +54,30 @@ export interface SearchResponse {
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
+/**
+ * Error de una búsqueda. El buscador elige el mensaje en el idioma de la página a partir del
+ * código HTTP (`status`, 0 si no hubo conexión); `detail` es el texto del backend, en castellano.
+ */
+export class SearchError extends Error {
+  constructor(
+    readonly status: number,
+    readonly detail: string | null = null,
+  ) {
+    super(detail ?? (status ? `HTTP ${status}` : "Sin conexión"));
+    this.name = "SearchError";
+  }
+}
+
 async function handle(res: Response): Promise<SearchResponse> {
   if (res.ok) return res.json();
-  let message = "Algo ha fallado. Inténtalo de nuevo.";
+  let detail: string | null = null;
   try {
     const body = await res.json();
-    if (typeof body.detail === "string") message = body.detail;
-    else if (Array.isArray(body.detail) && res.status === 422) message = "Revisa los datos: el enlace o la imagen no son válidos.";
+    if (typeof body.detail === "string") detail = body.detail;
   } catch {
     /* respuesta sin JSON */
   }
-  throw new Error(message);
+  throw new SearchError(res.status, detail);
 }
 
 /**
@@ -79,7 +92,7 @@ export function wakeBackend(): void {
 }
 
 function networkError(): Error {
-  return new Error("No hay conexión con el servidor de Alter. ¿Está arrancado el backend?");
+  return new SearchError(0);
 }
 
 export async function searchByUrl(url: string, notes?: string, signal?: AbortSignal): Promise<SearchResponse> {
