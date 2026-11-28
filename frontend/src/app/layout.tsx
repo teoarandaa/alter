@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 
+import BackendWarmup from "@/components/BackendWarmup";
 import MotionProvider from "@/components/MotionProvider";
 import { ADSENSE_ERROR_PROTECTION } from "@/lib/adsense-error-protection";
 import { UMAMI_DOMAINS, UMAMI_SCRIPT_URL, UMAMI_WEBSITE_ID } from "@/lib/analytics";
@@ -63,6 +64,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="flex min-h-full flex-col font-sans">
         <MotionProvider>{children}</MotionProvider>
+        {/* Despierta el backend (plan gratuito de Render) mientras el usuario prepara su búsqueda */}
+        <BackendWarmup />
         {/* Umami: solo se carga si hay ID configurado; respeta «No rastrear» del navegador */}
         {UMAMI_WEBSITE_ID && (
           <Script

@@ -67,6 +67,17 @@ async function handle(res: Response): Promise<SearchResponse> {
   throw new Error(message);
 }
 
+/**
+ * Despierta el backend sin esperar respuesta. En el plan gratuito de Render se apaga tras 15 minutos
+ * sin uso y tarda casi un minuto en arrancar: avisándole al abrir la web, ya está listo (o casi)
+ * cuando el usuario pulsa buscar. `no-cors` porque no hace falta leer la respuesta.
+ */
+export function wakeBackend(): void {
+  fetch(`${API_URL}/api/health`, { mode: "no-cors", cache: "no-store" }).catch(() => {
+    /* si falla, la búsqueda lo volverá a intentar */
+  });
+}
+
 function networkError(): Error {
   return new Error("No hay conexión con el servidor de Alter. ¿Está arrancado el backend?");
 }
