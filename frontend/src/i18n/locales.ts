@@ -21,7 +21,7 @@ export type LocaleInfo = {
   /**
    * Código hreflang para Google (ISO 639-1, el único que Google admite). Sin él, esa versión no se
    * anuncia como alternativa de idioma: es el caso de las variedades sin código propio (valenciano,
-   * balear, canario) y de las lenguas sin código ISO 639-1 (asturleonés, fala).
+   * balear) y de las lenguas sin código ISO 639-1 (asturleonés, fala).
    */
   hreflang?: string;
   /** Idioma de las tarjetas de Open Graph (idioma_PAÍS). */
@@ -29,7 +29,7 @@ export type LocaleInfo = {
 };
 
 /** En el orden del desplegable. El primero es el idioma por defecto (sin prefijo en la URL). */
-export const LOCALES = ["es", "canarias", "ca", "va", "balear", "gl", "eu", "oc", "an", "ast", "fala"] as const;
+export const LOCALES = ["es", "ca", "va", "balear", "gl", "eu", "oc", "an", "ast", "fala"] as const;
 
 export type Locale = (typeof LOCALES)[number];
 
@@ -37,7 +37,6 @@ export const DEFAULT_LOCALE: Locale = LOCALES[0];
 
 export const LOCALE_INFO: Record<Locale, LocaleInfo> = {
   es: { name: "Español", spanishName: "Castellano", short: "ES", htmlLang: "es", hreflang: "es", ogLocale: "es_ES" },
-  canarias: { name: "Canario", spanishName: "Castellano de Canarias", short: "CAN", htmlLang: "es-IC", ogLocale: "es_ES" },
   ca: { name: "Català", spanishName: "Catalán", short: "CA", htmlLang: "ca", hreflang: "ca", ogLocale: "ca_ES" },
   va: { name: "Valencià", spanishName: "Valenciano", short: "VA", htmlLang: "ca-ES-valencia", ogLocale: "ca_ES" },
   balear: { name: "Balear", spanishName: "Catalán de Baleares", short: "BAL", htmlLang: "ca", ogLocale: "ca_ES" },
